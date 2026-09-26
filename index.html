@@ -1908,7 +1908,34 @@ let HM_USE_PHOTO_SNAPSHOT = true;
   }
 
   // ── Geevon sensor CSV data stores (keyed g1, g2, g3) ────────────────
-  window.GEEVON_DATA = window.GEEVON_DATA || {g1:[], g2:[], g3:[]};
+  // Pre-loaded readings from photo evidence (read by Claude from uploaded hygrometer photos)
+  window.GEEVON_DATA = window.GEEVON_DATA || {
+    g1: [
+      // Geevon Ch1 — Master Bedroom
+      {date:'3/17/2026',time:'12:01',humidity:69,temp:71.7},
+      {date:'3/19/2026',time:'11:49',humidity:73,temp:70.7},
+      {date:'3/19/2026',time:'11:50',humidity:73,temp:70.7},
+      {date:'4/2/2026',time:'13:55',humidity:65,temp:72.1},
+      {date:'4/2/2026',time:'13:54',humidity:65,temp:71.9}
+    ],
+    g2: [
+      // Geevon Ch2 — Living/Dining Room + AcuRite dial (entryway)
+      {date:'3/11/2026',time:'20:26',humidity:70,temp:70.0},
+      {date:'3/13/2026',time:'10:56',humidity:70,temp:68.0},
+      {date:'3/17/2026',time:'12:01',humidity:80,temp:67.8},
+      {date:'3/19/2026',time:'11:49',humidity:81,temp:69.6},
+      {date:'3/19/2026',time:'11:50',humidity:81,temp:69.6},
+      {date:'4/2/2026',time:'13:55',humidity:67,temp:70.8},
+      {date:'4/6/2026',time:'17:16',humidity:70,temp:72.0}
+    ],
+    g3: [
+      // Geevon Ch3 — Second Bedroom
+      {date:'3/17/2026',time:'12:01',humidity:74,temp:70.8},
+      {date:'3/19/2026',time:'11:49',humidity:76,temp:70.5},
+      {date:'3/19/2026',time:'11:50',humidity:76,temp:70.5},
+      {date:'4/2/2026',time:'13:55',humidity:65,temp:70.3}
+    ]
+  };
 
   // ── Parse a Geevon CSV text into records [{date,time,humidity,temp}] ─
   function parseGeevonCSV(text){
