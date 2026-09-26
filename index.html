@@ -1947,21 +1947,215 @@ let HM_USE_PHOTO_SNAPSHOT = true;
   }
 
   // ── Attach Geevon upload handlers after DOM ready ─────────────────
+  // ── API Key storage (localStorage) ───────────────────────────────────
+  function getApiKey(){ try{return localStorage.getItem('iaq_anthropic_key')||'';}catch(e){return '';} }
+  function setApiKey(k){ try{localStorage.setItem('iaq_anthropic_key',k);}catch(e){} }
+
+  // ── Vision: read hygrometer photo via Claude API ──────────────────────
+  async function readHygrometerPhoto(file){
+    const key=getApiKey();
+    if(!key) throw new Error('NO_KEY');
+    // Convert image to base64
+    const b64=await new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=e=>res(e.target.result.split(',')[1]);
+      r.onerror=rej;
+      r.readAsDataURL(file);
+    });
+    const mime=file.type||'image/jpeg';
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+        'content-type':'application/json'
+      },
+      body:JSON.stringify({
+        model:'claude-opus-4-5',
+        max_tokens:256,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mime,data:b64}},
+          {type:'text',text:'This is a photo of a digital hygrometer display. Extract the humidity percentage and temperature reading shown. Also look for any date or time shown on the display. Return ONLY a JSON object like: {"humidity":65.2,"temp":72.1,"tempUnit":"F","date":"2025-03-15","time":"14:30"} — use null for any field you cannot read. Date format: YYYY-MM-DD, time format HH:MM (24h). Do not include any other text.'}
+        ]}]
+      })
+    });
+    if(!resp.ok){
+      const err=await resp.json().catch(()=>({}));
+      throw new Error(err?.error?.message||`API error ${resp.status}`);
+    }
+    const data=await resp.json();
+    const txt=(data.content||[]).find(c=>c.type==='text')?.text||'';
+    const match=txt.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('Could not parse response');
+    return JSON.parse(match[0]);
+  }
+
+  // ── Confirm modal for photo readings ─────────────────────────────────
+  function showPhotoConfirmModal(sensorKey, sensorLabel, reading, imgSrc, onConfirm){
+    let modal=document.getElementById('photo-confirm-modal');
+    if(!modal){
+      modal=document.createElement('div');
+      modal.id='photo-confirm-modal';
+      modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      document.body.appendChild(modal);
+    }
+    const dateVal=reading.date||'';
+    const timeVal=reading.time||'';
+    const humVal=reading.humidity!=null?reading.humidity:'';
+    const tempVal=reading.temp!=null?reading.temp:'';
+    const tempUnit=reading.tempUnit||'F';
+    modal.innerHTML=`
+    <div style="background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:540px;width:100%;overflow:hidden;">
+      <div style="background:linear-gradient(135deg,#0d8a7a,#059669);padding:18px 22px;color:#fff;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;opacity:.8;">Photo Reading Detected</div>
+        <div style="font-size:17px;font-weight:700;margin-top:3px;">${sensorLabel}</div>
+      </div>
+      <div style="display:flex;gap:16px;padding:18px 22px;">
+        <img src="${imgSrc}" style="width:140px;height:140px;object-fit:cover;border-radius:10px;border:2px solid #e2e8f0;flex-shrink:0;">
+        <div style="flex:1;">
+          <div style="font-size:12px;color:#64748b;margin-bottom:10px;">Verify or correct the values Claude read from your photo:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">Humidity (%)</label>
+              <input id="pc-hum" type="number" step="0.1" min="0" max="100" value="${humVal}" style="width:100%;padding:7px 10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-weight:700;color:#0d8a7a;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">Temp (°${tempUnit})</label>
+              <input id="pc-temp" type="number" step="0.1" value="${tempVal}" style="width:100%;padding:7px 10px;border:2px solid #e2e8f0;border-radius:8px;font-size:14px;font-weight:700;color:#374151;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">Date (YYYY-MM-DD)</label>
+              <input id="pc-date" type="date" value="${dateVal}" style="width:100%;padding:7px 10px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;">
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px;">Time (HH:MM)</label>
+              <input id="pc-time" type="time" value="${timeVal}" style="width:100%;padding:7px 10px;border:2px solid #e2e8f0;border-radius:8px;font-size:13px;">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 22px 18px;display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="document.getElementById('photo-confirm-modal').remove()" style="padding:9px 20px;border-radius:999px;border:2px solid #e2e8f0;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#64748b;">Skip Photo</button>
+        <button id="pc-save-btn" style="padding:9px 24px;border-radius:999px;border:none;background:#0d8a7a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">✓ Save Reading</button>
+      </div>
+    </div>`;
+    document.getElementById('pc-save-btn').onclick=function(){
+      const hum=parseFloat(document.getElementById('pc-hum').value);
+      const temp=parseFloat(document.getElementById('pc-temp').value);
+      const date=document.getElementById('pc-date').value;
+      const time=document.getElementById('pc-time').value;
+      if(isNaN(hum)||hum<0||hum>100){alert('Please enter a valid humidity (0–100).');return;}
+      if(!date){alert('Please enter the date.');return;}
+      if(!time){alert('Please enter the time.');return;}
+      // Convert YYYY-MM-DD to m/d/yyyy
+      const [yr,mo,dy]=date.split('-').map(Number);
+      const normDate=`${mo}/${dy}/${yr}`;
+      onConfirm({humidity:hum,temp:isNaN(temp)?null:temp,date:normDate,time});
+      modal.remove();
+    };
+  }
+
+  // ── API Key setup modal ───────────────────────────────────────────────
+  window.showApiKeyModal=function(afterSave){
+    let modal=document.getElementById('apikey-modal');
+    if(!modal){modal=document.createElement('div');modal.id='apikey-modal';modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;';document.body.appendChild(modal);}
+    const cur=getApiKey();
+    modal.innerHTML=`
+    <div style="background:#fff;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:480px;width:100%;padding:26px 28px;">
+      <div style="font-size:17px;font-weight:700;color:#0d8a7a;margin-bottom:6px;">🔑 Anthropic API Key</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:16px;">Your key is stored only in your browser (localStorage) and sent directly to Anthropic — never to any other server. Get a key at <a href="https://console.anthropic.com" target="_blank" style="color:#0d8a7a;">console.anthropic.com</a>.</div>
+      <input id="apikey-input" type="password" placeholder="sk-ant-..." value="${cur}" style="width:100%;box-sizing:border-box;padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:monospace;margin-bottom:16px;">
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="document.getElementById('apikey-modal').remove()" style="padding:9px 20px;border-radius:999px;border:2px solid #e2e8f0;background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#64748b;">Cancel</button>
+        <button id="apikey-save" style="padding:9px 24px;border-radius:999px;border:none;background:#0d8a7a;color:#fff;font-size:13px;font-weight:700;cursor:pointer;">Save Key</button>
+      </div>
+    </div>`;
+    document.getElementById('apikey-save').onclick=function(){
+      const v=document.getElementById('apikey-input').value.trim();
+      if(!v.startsWith('sk-')){alert('That does not look like a valid Anthropic API key (should start with sk-ant-).');return;}
+      setApiKey(v);
+      modal.remove();
+      if(afterSave)afterSave();
+    };
+  };
+
+  // ── Process a batch of photos for a sensor ───────────────────────────
+  window.processGeevonPhotos=async function(key, sensorLabel, files){
+    const fileArr=Array.from(files);
+    if(!fileArr.length) return;
+    const apiKey=getApiKey();
+    if(!apiKey){window.showApiKeyModal(()=>window.processGeevonPhotos(key,sensorLabel,files));return;}
+
+    // Show processing indicator
+    const statusId='photo-status-'+key;
+    let statusEl=document.getElementById(statusId);
+    if(statusEl) statusEl.textContent=`Processing ${fileArr.length} photo${fileArr.length>1?'s':''}…`;
+
+    let idx=0;
+    async function processNext(){
+      if(idx>=fileArr.length) return;
+      const file=fileArr[idx++];
+      const imgSrc=URL.createObjectURL(file);
+      if(statusEl) statusEl.textContent=`Reading photo ${idx} of ${fileArr.length}…`;
+      let reading;
+      try{
+        reading=await readHygrometerPhoto(file);
+      }catch(e){
+        if(e.message==='NO_KEY'){window.showApiKeyModal(()=>window.processGeevonPhotos(key,sensorLabel,files));return;}
+        // If API fails, show manual confirm with empty fields
+        reading={humidity:null,temp:null,date:null,time:null,tempUnit:'F'};
+        console.warn('Vision API error:',e.message);
+      }
+      showPhotoConfirmModal(key, sensorLabel, reading, imgSrc, function(confirmed){
+        // Add to GEEVON_DATA
+        if(!window.GEEVON_DATA[key]) window.GEEVON_DATA[key]=[];
+        window.GEEVON_DATA[key].push({
+          date:confirmed.date,
+          time:confirmed.time,
+          humidity:confirmed.humidity,
+          temp:confirmed.temp
+        });
+        // Sort by date+time
+        window.GEEVON_DATA[key].sort((a,b)=>{
+          const toMs=r=>{const[m,d,y]=r.date.split('/').map(Number);const[hh,mm]=(r.time||'0:0').split(':').map(Number);return new Date(y,m-1,d,hh,mm).getTime();};
+          return toMs(a)-toMs(b);
+        });
+        renderHeatMap();
+        // Process next photo
+        processNext();
+      });
+    }
+    processNext();
+  };
+
   window.initGeevonUploads=function(){
     ['g1','g2','g3'].forEach(key=>{
-      const inp=document.getElementById('geevon-csv-'+key);
-      if(!inp||inp._bound) return;
-      inp._bound=true;
-      inp.addEventListener('change',function(){
-        const file=this.files[0]; if(!file) return;
-        const reader=new FileReader();
-        reader.onload=function(e){
-          const records=parseGeevonCSV(e.target.result);
-          window.GEEVON_DATA[key]=records;
-          renderHeatMap();
-        };
-        reader.readAsText(file);
-      });
+      // CSV upload (existing)
+      const csvInp=document.getElementById('geevon-csv-'+key);
+      if(csvInp&&!csvInp._bound){
+        csvInp._bound=true;
+        csvInp.addEventListener('change',function(){
+          const file=this.files[0]; if(!file) return;
+          const reader=new FileReader();
+          reader.onload=function(e){
+            const records=parseGeevonCSV(e.target.result);
+            window.GEEVON_DATA[key]=records;
+            renderHeatMap();
+          };
+          reader.readAsText(file);
+        });
+      }
+      // Photo upload (new)
+      const photoInp=document.getElementById('geevon-photo-'+key);
+      if(photoInp&&!photoInp._bound){
+        photoInp._bound=true;
+        photoInp.addEventListener('change',function(){
+          const sensorLabels={g1:'Geevon Sensor 1 — Master Bedroom',g2:'Geevon Sensor 2 — Living/Dining',g3:'Geevon Sensor 3 — Second Bedroom'};
+          window.processGeevonPhotos(key,sensorLabels[key],this.files);
+          this.value=''; // reset so same files can be re-added
+        });
+      }
     });
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',window.initGeevonUploads);
@@ -2054,17 +2248,25 @@ let HM_USE_PHOTO_SNAPSHOT = true;
       if(!N){
         // Show upload prompt
         const uploadHtml=uploadKey?`
-          <label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:8px;background:var(--iot-teal);color:#fff;font-size:13px;font-weight:600;letter-spacing:.5px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 2px 10px rgba(13,138,122,0.3);margin-top:12px;">
-            📂 Upload ${sensorLabel} CSV
-          </label>
-          <input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;">
+            <label for="geevon-photo-${uploadKey}" style="display:inline-flex;align-items:center;gap:8px;background:var(--iot-teal);color:#fff;font-size:13px;font-weight:600;letter-spacing:.5px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 2px 10px rgba(13,138,122,0.3);">
+              📷 Upload Photos
+            </label>
+            <input type="file" id="geevon-photo-${uploadKey}" accept="image/*" multiple style="display:none;">
+            <label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--iot-teal);font-size:13px;font-weight:600;padding:9px 22px;border-radius:999px;cursor:pointer;border:2px solid var(--iot-teal);">
+              📂 Upload CSV
+            </label>
+            <input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">
+          </div>
+          <div id="photo-status-${uploadKey}" style="font-size:12px;color:var(--text-muted);margin-top:8px;min-height:18px;"></div>
+          <div style="font-size:11.5px;color:var(--text-muted);margin-top:6px;">📷 Photos are read automatically by AI — just verify each reading before saving</div>
         `:'';
         return `
         <div style="margin-bottom:28px;border-radius:16px;border:2px dashed var(--border-md);background:rgba(255,255,255,0.5);padding:28px 24px;text-align:center;">
           <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--iot-teal);margin-bottom:6px;">${sensorLabel}</div>
           <div style="font-size:13px;color:var(--text-muted);">${sensorSub}</div>
-          <div style="font-size:24px;margin:14px 0 6px;">📡</div>
-          <div style="font-size:13.5px;color:var(--text-mid);">No CSV data loaded for this sensor.</div>
+          <div style="font-size:28px;margin:14px 0 6px;">📡</div>
+          <div style="font-size:13.5px;color:var(--text-mid);">No data loaded for this sensor yet.</div>
           ${uploadHtml}
         </div>`;
       }
@@ -2186,7 +2388,14 @@ let HM_USE_PHOTO_SNAPSHOT = true;
       </svg>
       <div id="cal-tip-${uploadKey||'s1a'}" style="font-size:11px;color:var(--text-mid);min-height:16px;margin-top:4px;padding-left:50px;"></div>`;
 
-      const uploadBtn=uploadKey?`<label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,138,122,0.12);color:var(--iot-teal);font-size:11.5px;font-weight:600;padding:5px 14px;border-radius:999px;cursor:pointer;border:1px solid rgba(13,138,122,0.25);margin-left:12px;">📂 Replace CSV</label><input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">`:'';
+      const uploadBtn=uploadKey?`
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <label for="geevon-photo-${uploadKey}" style="display:inline-flex;align-items:center;gap:5px;background:rgba(13,138,122,0.12);color:var(--iot-teal);font-size:11.5px;font-weight:600;padding:5px 14px;border-radius:999px;cursor:pointer;border:1px solid rgba(13,138,122,0.25);">📷 Add Photos</label>
+          <input type="file" id="geevon-photo-${uploadKey}" accept="image/*" multiple style="display:none;">
+          <label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:5px;background:transparent;color:var(--text-muted);font-size:11.5px;font-weight:600;padding:5px 14px;border-radius:999px;cursor:pointer;border:1px solid var(--border-md);">📂 Replace CSV</label>
+          <input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">
+          <div id="photo-status-${uploadKey}" style="font-size:11px;color:var(--text-muted);min-height:16px;"></div>
+        </div>`:'';
 
       return `
       <div style="margin-bottom:28px;">
@@ -2257,7 +2466,10 @@ let HM_USE_PHOTO_SNAPSHOT = true;
 
     statsEl.innerHTML=`
       ${legend}
-      <div style="font-family:'Libre Baskerville',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--iot-teal);">📊 Sensor Data Visualizations</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--iot-teal);flex-wrap:wrap;gap:10px;">
+        <div style="font-family:'Libre Baskerville',serif;font-size:20px;font-weight:700;color:var(--text);">📊 Sensor Data Visualizations</div>
+        <button onclick="window.showApiKeyModal()" style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,138,122,0.1);color:var(--iot-teal);font-size:12px;font-weight:700;padding:6px 16px;border-radius:999px;border:1px solid rgba(13,138,122,0.3);cursor:pointer;">🔑 ${getApiKey()?'API Key ✓':'Set API Key for Photo Reading'}</button>
+      </div>
       ${block1A}
       ${blockG1}
       ${blockG2}
