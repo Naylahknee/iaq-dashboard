@@ -2120,14 +2120,71 @@ let HM_USE_PHOTO_SNAPSHOT = true;
         const [am,ad,ay]=a.split('/').map(Number),[bm,bd,by]=b.split('/').map(Number);
         return (ay-by)||(am-bm)||(ad-bd);
       });
-      const calRows=sortedDates.map(dateKey=>{
+
+      // GitHub-style calendar: build a week-column grid
+      // Find date range
+      function parseDateKey(k){ const[m,d,y]=k.split('/').map(Number); return new Date(y,m-1,d); }
+      const firstDate=parseDateKey(sortedDates[0]);
+      const lastDate=parseDateKey(sortedDates[sortedDates.length-1]);
+      // Map dateKey → dayAvg
+      const dayAvgMap={};
+      sortedDates.forEach(dateKey=>{
         const row=dateHourMap[dateKey];
-        const dayLabel=DAYS[row.dow].slice(0,3);
-        const dateLabel=`${row.mo}/${row.dy}`;
-        const dayAvgVals=row.hours.filter(v=>v!=null);
-        const dayAvg=dayAvgVals.length?+(dayAvgVals.reduce((a,b)=>a+b,0)/dayAvgVals.length).toFixed(1):null;
-        return `<tr>${labelCell(`<span style="color:var(--text-muted);font-size:10px;">${dayLabel}</span> ${dateLabel}`)}${HOURS.map(h=>cell(row.hours[h],`${dateKey} ${h}:00 — ${row.hours[h]!=null?row.hours[h]+'%':'no data'}`)).join('')}${cell(dayAvg,'Day avg',true)}</tr>`;
-      }).join('');
+        const vals=row.hours.filter(v=>v!=null);
+        dayAvgMap[dateKey]=vals.length?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):null;
+      });
+      // Build week columns: start from Sunday of firstDate's week
+      const calStart=new Date(firstDate); calStart.setDate(firstDate.getDate()-firstDate.getDay());
+      const calEnd=new Date(lastDate); calEnd.setDate(lastDate.getDate()+(6-lastDate.getDay()));
+      const weeks=[]; let wk=[]; let cur=new Date(calStart);
+      while(cur<=calEnd){
+        wk.push(new Date(cur));
+        if(wk.length===7){weeks.push(wk);wk=[];}
+        cur.setDate(cur.getDate()+1);
+      }
+      if(wk.length){while(wk.length<7)wk.push(null);weeks.push(wk);}
+      // Month labels: find first week of each month
+      const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let monthLabels=Array(weeks.length).fill('');
+      let lastMonthSeen=-1;
+      weeks.forEach((wk,wi)=>{
+        const firstReal=wk.find(d=>d);
+        if(firstReal){
+          const mo=firstReal.getMonth();
+          if(mo!==lastMonthSeen){monthLabels[wi]=monthNames[mo];lastMonthSeen=mo;}
+        }
+      });
+      // Build SVG-like calendar via divs
+      const SQUARE=13, GAP=2, DOW_LABELS=['','Mon','','Wed','','Fri','','Sun'];
+      const calW=weeks.length*(SQUARE+GAP)+50;
+      const calH=7*(SQUARE+GAP)+26;
+      let squareDivs='';
+      weeks.forEach((wk,wi)=>{
+        wk.forEach((d,di)=>{
+          if(!d) return;
+          const mo=d.getMonth(),dy=d.getDate(),yr=d.getFullYear();
+          const dKey=`${mo+1}/${dy}/${yr}`;
+          const hVal=dayAvgMap[dKey]??null;
+          const col=heatColor(hVal);
+          const tip=hVal!=null?`${monthNames[mo]} ${dy}, ${yr}: ${hVal}% avg RH`:`${monthNames[mo]} ${dy}, ${yr}: no data`;
+          const x=50+wi*(SQUARE+GAP), y=20+di*(SQUARE+GAP);
+          squareDivs+=`<rect x="${x}" y="${y}" width="${SQUARE}" height="${SQUARE}" rx="2" ry="2" fill="${col}" style="cursor:default;" onmouseover="document.getElementById('cal-tip-${uploadKey||'s1a'}').textContent='${tip.replace(/'/g,'&#39;')}'" onmouseout="document.getElementById('cal-tip-${uploadKey||'s1a'}').textContent=''"><title>${tip}</title></rect>`;
+        });
+        // Month label
+        if(monthLabels[wi]){
+          const x=50+wi*(SQUARE+GAP);
+          squareDivs+=`<text x="${x}" y="14" font-size="9" fill="var(--text-muted)" font-family="inherit">${monthLabels[wi]}</text>`;
+        }
+      });
+      // DOW labels
+      let dowLabelSvg='';
+      DOW_LABELS.forEach((lbl,di)=>{
+        if(lbl) dowLabelSvg+=`<text x="44" y="${20+di*(SQUARE+GAP)+SQUARE-2}" font-size="9" text-anchor="end" fill="var(--text-muted)" font-family="inherit">${lbl}</text>`;
+      });
+      const calSvg=`<svg width="${calW}" height="${calH}" style="overflow:visible;display:block;">
+        ${dowLabelSvg}${squareDivs}
+      </svg>
+      <div id="cal-tip-${uploadKey||'s1a'}" style="font-size:11px;color:var(--text-mid);min-height:16px;margin-top:4px;padding-left:50px;"></div>`;
 
       const uploadBtn=uploadKey?`<label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,138,122,0.12);color:var(--iot-teal);font-size:11.5px;font-weight:600;padding:5px 14px;border-radius:999px;cursor:pointer;border:1px solid rgba(13,138,122,0.25);margin-left:12px;">📂 Replace CSV</label><input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">`:'';
 
@@ -2154,14 +2211,16 @@ let HM_USE_PHOTO_SNAPSHOT = true;
         <div style="background:rgba(255,255,255,.72);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden;box-shadow:var(--glass-shadow);margin-top:14px;">
           <div style="padding:12px 18px 10px;border-bottom:var(--rule);">
             <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--iot-teal);">${sensorLabel}</div>
-            <div style="font-family:'Libre Baskerville',serif;font-size:15px;font-weight:700;color:var(--text);margin-top:2px;">Humidity by Date × Hour of Day</div>
-            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${sortedDates.length} days · hover a cell for detail</div>
+            <div style="font-family:'Libre Baskerville',serif;font-size:15px;font-weight:700;color:var(--text);margin-top:2px;">Daily Humidity Activity</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${sortedDates.length} days recorded · hover a square for detail</div>
           </div>
-          <div style="padding:10px 18px 18px;overflow-x:auto;">
-            <table style="border-collapse:collapse;font-size:10px;">
-              <thead>${hourHeaders}</thead>
-              <tbody>${calRows}${avgRow}</tbody>
-            </table>
+          <div style="padding:14px 18px 18px;overflow-x:auto;">
+            ${calSvg}
+            <div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-left:50px;">
+              <span style="font-size:10px;color:var(--text-muted);">Less</span>
+              ${['#dbeafe','#bfdbfe','#fde68a','#fbbf24','#fb923c','#f97316','#ef4444','#7f1d1d'].map(c=>`<span style="width:12px;height:12px;border-radius:2px;background:${c};display:inline-block;"></span>`).join('')}
+              <span style="font-size:10px;color:var(--text-muted);">More</span>
+            </div>
           </div>
         </div>`:''}
       </div>`;
