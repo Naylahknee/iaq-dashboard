@@ -1907,6 +1907,66 @@ let HM_USE_PHOTO_SNAPSHOT = true;
     labels.innerHTML='';
   }
 
+  // ── Geevon sensor CSV data stores (keyed g1, g2, g3) ────────────────
+  window.GEEVON_DATA = window.GEEVON_DATA || {g1:[], g2:[], g3:[]};
+
+  // ── Parse a Geevon CSV text into records [{date,time,humidity,temp}] ─
+  function parseGeevonCSV(text){
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    const records=[];
+    lines.forEach(line=>{
+      const cols=line.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
+      // Try to find date/time/humidity columns by position or content
+      // Geevon format: Date, Time, Humidity(%), Temperature(°F or °C)
+      if(cols.length<3) return;
+      // Skip header rows
+      if(isNaN(parseFloat(cols[2]))) return;
+      const datePart=cols[0]||'';
+      const timePart=cols[1]||'';
+      const hum=parseFloat(cols[2]);
+      const tmp=parseFloat(cols[3]);
+      if(isNaN(hum)||hum<0||hum>100) return;
+      // Normalize date to m/d/yyyy
+      let date=datePart;
+      // If yyyy-mm-dd format, convert
+      const isoMatch=datePart.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if(isoMatch) date=`${+isoMatch[2]}/${+isoMatch[3]}/${isoMatch[1]}`;
+      // Normalize time to HH:MM
+      let time=timePart.replace(/\s*(AM|PM)$/i,'').trim();
+      const ampm=timePart.match(/(AM|PM)$/i);
+      if(ampm){
+        const [hh,mm]=(time+':00').split(':');
+        let h=+hh;
+        if(ampm[1].toUpperCase()==='PM'&&h!==12) h+=12;
+        if(ampm[1].toUpperCase()==='AM'&&h===12) h=0;
+        time=`${String(h).padStart(2,'0')}:${mm||'00'}`;
+      }
+      records.push({date,time,humidity:hum,temp:isNaN(tmp)?null:tmp});
+    });
+    return records;
+  }
+
+  // ── Attach Geevon upload handlers after DOM ready ─────────────────
+  window.initGeevonUploads=function(){
+    ['g1','g2','g3'].forEach(key=>{
+      const inp=document.getElementById('geevon-csv-'+key);
+      if(!inp||inp._bound) return;
+      inp._bound=true;
+      inp.addEventListener('change',function(){
+        const file=this.files[0]; if(!file) return;
+        const reader=new FileReader();
+        reader.onload=function(e){
+          const records=parseGeevonCSV(e.target.result);
+          window.GEEVON_DATA[key]=records;
+          renderHeatMap();
+        };
+        reader.readAsText(file);
+      });
+    });
+  };
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',window.initGeevonUploads);
+  else setTimeout(window.initGeevonUploads,100);
+
   window.renderHeatMap=function(){
     // Hide old spatial elements
     ['spatial-heatmap-wrap','hm-photo-snapshot-controls','hm-legend'].forEach(id=>{
@@ -1916,21 +1976,10 @@ let HM_USE_PHOTO_SNAPSHOT = true;
     const statsEl=document.getElementById('hm-stats');
     if(!statsEl) return;
     statsEl.style.display='block';
-    statsEl.style.maxWidth='1040px';
+    statsEl.style.maxWidth='1100px';
     statsEl.style.gridTemplateColumns='';
 
-    const active=typeof getActiveData==='function'?getActiveData():DATA;
-    const N=active.length;
-
-    if(!N){
-      statsEl.innerHTML=`<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:14px;background:rgba(255,255,255,0.6);border-radius:12px;border:var(--rule);">
-        <div style="font-size:28px;margin-bottom:10px;">📡</div>
-        <strong>No TempPro CSV loaded yet</strong><br>Use the Upload CSV button above to load Sensor 1A data.
-      </div>`;
-      return;
-    }
-
-    // ── Color scale ──────────────────────────────────────────────────
+    // ── Shared helpers ────────────────────────────────────────────────
     function heatColor(h){
       if(h===null||h===undefined) return '#e2e8f0';
       if(h>=85) return '#7f1d1d';
@@ -1948,166 +1997,216 @@ let HM_USE_PHOTO_SNAPSHOT = true;
       if(h>=60) return '#7c3f00';
       return '#1e3a5f';
     }
-
-    // ── Summary stats ─────────────────────────────────────────────────
-    const hums=active.map(r=>r.humidity).filter(v=>v!=null);
-    const avg=v=>v.length?+(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null;
-    const avgH=avg(hums), peakH=hums.length?Math.max(...hums):null;
-    const pct60=hums.length?+((hums.filter(v=>v>=60).length/hums.length)*100).toFixed(1):null;
-
-    const statCards=[
-      {lbl:'Avg Humidity',val:avgH!=null?avgH+'%':'—',sub:'Sensor 1A · all uploads',c:heatColor(avgH)},
-      {lbl:'Peak Humidity',val:peakH!=null?peakH+'%':'—',sub:'highest single reading',c:heatColor(peakH)},
-      {lbl:'Readings ≥60%',val:pct60!=null?pct60+'%':'—',sub:'mold-risk threshold',c:'#fb923c'},
-      {lbl:'Total Readings',val:N.toLocaleString(),sub:'hourly samples loaded',c:'#64748b'},
-    ].map(s=>`<div style="flex:1;min-width:140px;background:rgba(255,255,255,.72);border:1px solid var(--glass-border);border-left:4px solid ${s.c};border-radius:12px;padding:14px 16px;">
-      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);">${s.lbl}</div>
-      <div style="font-family:'Libre Baskerville',serif;font-size:26px;font-weight:700;color:${s.c};margin:4px 0 2px;">${s.val}</div>
-      <div style="font-size:11.5px;color:var(--text-muted);">${s.sub}</div>
-    </div>`).join('');
-
-    // ── Build lookup: day-of-week × hour → avg humidity ───────────────
-    // day 0=Sun … 6=Sat, hour 0–23
-    const dowHour=Array.from({length:7},()=>Array(24).fill(null));
-    const dowHourSums=Array.from({length:7},()=>Array(24).fill(0));
-    const dowHourCounts=Array.from({length:7},()=>Array(24).fill(0));
-
-    // Also: date × hour for calendar view
-    const dateHourMap={};
-
-    active.forEach(r=>{
-      if(r.humidity==null) return;
-      // parse date m/d/y
-      const parts=(r.date||'').split('/');
-      const timeParts=(r.time||'').split(':');
-      if(parts.length<3||timeParts.length<1) return;
-      const [mo,dy,yr]=[+parts[0],+parts[1],+parts[2]];
-      const hour=+timeParts[0];
-      if(isNaN(mo)||isNaN(dy)||isNaN(yr)||isNaN(hour)) return;
-      const dt=new Date(yr,mo-1,dy);
-      const dow=dt.getDay(); // 0=Sun
-      dowHourSums[dow][hour]+=r.humidity;
-      dowHourCounts[dow][hour]++;
-
-      const key=r.date;
-      if(!dateHourMap[key]) dateHourMap[key]={date:r.date,dow,mo,dy,yr,hours:Array(24).fill(null),sums:Array(24).fill(0),counts:Array(24).fill(0)};
-      dateHourMap[key].sums[hour]+=r.humidity;
-      dateHourMap[key].counts[hour]++;
-    });
-
-    for(let d=0;d<7;d++) for(let h=0;h<24;h++)
-      dowHour[d][h]=dowHourCounts[d][h]>0?+(dowHourSums[d][h]/dowHourCounts[d][h]).toFixed(1):null;
-
-    Object.values(dateHourMap).forEach(row=>{
-      for(let h=0;h<24;h++)
-        row.hours[h]=row.counts[h]>0?+(row.sums[h]/row.counts[h]).toFixed(1):null;
-    });
-
-    // ── Hourly avg (across all days) ─────────────────────────────────
-    const hourAvg=Array(24).fill(null);
-    const hSums=Array(24).fill(0), hCounts=Array(24).fill(0);
-    active.forEach(r=>{
-      if(r.humidity==null) return;
-      const h=+((r.time||'').split(':')[0]);
-      if(isNaN(h)) return;
-      hSums[h]+=r.humidity; hCounts[h]++;
-    });
-    for(let h=0;h<24;h++) hourAvg[h]=hCounts[h]>0?+(hSums[h]/hCounts[h]).toFixed(1):null;
-
-    // ── DOW labels ────────────────────────────────────────────────────
     const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
     const HOURS=Array.from({length:24},(_,i)=>i);
 
-    // ── Cell renderer ─────────────────────────────────────────────────
     const cell=(h,tip='',bold=false)=>`<td title="${tip}" style="
-      width:36px;height:28px;min-width:28px;text-align:center;vertical-align:middle;
+      width:34px;height:26px;min-width:26px;text-align:center;vertical-align:middle;
       background:${heatColor(h)};color:${heatTextColor(h)};
-      font-size:${bold?'10.5':'9.5'}px;font-weight:${bold?'700':'500'};
+      font-size:${bold?'10':'9'}px;font-weight:${bold?'700':'500'};
       border:1px solid rgba(255,255,255,0.5);cursor:default;transition:filter .1s;
       " onmouseover="this.style.filter='brightness(0.88)'" onmouseout="this.style.filter=''"
     >${h!=null?h+'%':''}</td>`;
 
     const labelCell=(txt,bold=false)=>`<td style="
-      padding:4px 10px 4px 4px;white-space:nowrap;font-size:${bold?'11':'11'}px;
+      padding:4px 10px 4px 4px;white-space:nowrap;font-size:11px;
       font-weight:${bold?'700':'500'};color:${bold?'var(--text)':'var(--text-mid)'};
       text-align:right;border:none;background:transparent;
     ">${txt}</td>`;
 
-    // ── DOW × HOUR table ──────────────────────────────────────────────
-    const hourHeaders=`<tr><td style="border:none;background:transparent;"></td>${HOURS.map(h=>`<th style="width:36px;font-size:9.5px;font-weight:600;color:var(--text-muted);text-align:center;padding:3px 0;border:none;background:transparent;">${h}</th>`).join('')}</tr>`;
+    const hourHeaders=`<tr><td style="border:none;background:transparent;"></td>${HOURS.map(h=>`<th style="width:34px;font-size:9px;font-weight:600;color:var(--text-muted);text-align:center;padding:3px 0;border:none;background:transparent;">${h}</th>`).join('')}</tr>`;
 
-    const dowRows=DAYS.map((day,d)=>{
-      const dayAvg=dowHourCounts[d].some(c=>c>0)?+(dowHourSums[d].reduce((a,b)=>a+b,0)/dowHourCounts[d].reduce((a,b)=>a+b,0)).toFixed(1):null;
-      return `<tr>${labelCell(day)}${HOURS.map(h=>cell(dowHour[d][h],`${day} ${h}:00 — ${dowHour[d][h]!=null?dowHour[d][h]+'% avg humidity':'no data'}`)).join('')}${cell(dayAvg,'Day average',true)}</tr>`;
-    }).join('');
-
-    const avgRow=`<tr style="border-top:2px solid rgba(0,0,0,0.08);">${labelCell('Hourly Avg',true)}${HOURS.map(h=>cell(hourAvg[h],`Hour ${h}:00 avg — ${hourAvg[h]!=null?hourAvg[h]+'%':'no data'}`,true)).join('')}<td style="border:none;background:transparent;"></td></tr>`;
-
-    const dowTable=`
-    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,.72);box-shadow:var(--glass-shadow);">
-      <div style="padding:14px 18px 10px;border-bottom:var(--rule);">
-        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-muted);">Sensor 1A · Hallway Entry — ThermoPro TP358S</div>
-        <div style="font-family:'Libre Baskerville',serif;font-size:16px;font-weight:700;color:var(--text);margin-top:2px;">Humidity by Day of Week × Hour of Day</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Average % RH across all ${N.toLocaleString()} readings · hover a cell for detail</div>
-      </div>
-      <div style="padding:14px 18px 18px;overflow-x:auto;">
-        <table style="border-collapse:collapse;font-size:11px;">
-          <thead>${hourHeaders}</thead>
-          <tbody>${dowRows}${avgRow}</tbody>
-        </table>
-      </div>
-    </div>`;
-
-    // ── Legend ─────────────────────────────────────────────────────────
+    // ── Legend ────────────────────────────────────────────────────────
     const legendItems=[
-      {label:'< 55%',c:'#dbeafe'},{label:'55–59%',c:'#bfdbfe'},
+      {label:'<55%',c:'#dbeafe'},{label:'55–59%',c:'#bfdbfe'},
       {label:'60–64%',c:'#fde68a'},{label:'65–69%',c:'#fbbf24'},
       {label:'70–74%',c:'#fb923c'},{label:'75–79%',c:'#f97316'},
       {label:'80–84%',c:'#ef4444'},{label:'85%+',c:'#7f1d1d'},
-    ].map(l=>`<div style="display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-muted);">
-      <span style="width:18px;height:18px;border-radius:4px;background:${l.c};display:inline-block;flex-shrink:0;"></span>${l.label}
+    ].map(l=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);">
+      <span style="width:16px;height:16px;border-radius:3px;background:${l.c};display:inline-block;flex-shrink:0;"></span>${l.label}
     </div>`).join('');
-    const legend=`<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:10px 14px;background:rgba(255,255,255,0.6);border-radius:10px;border:var(--rule);">
-      <span style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-right:4px;">% RH</span>
+    const legend=`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:9px 14px;background:rgba(255,255,255,0.6);border-radius:10px;border:var(--rule);margin-bottom:20px;">
+      <span style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-right:4px;">% RH</span>
       ${legendItems}
     </div>`;
 
-    // ── Calendar (date × hour) view ────────────────────────────────────
-    const sortedDates=Object.keys(dateHourMap).sort((a,b)=>{
-      const [am,ad,ay]=a.split('/').map(Number), [bm,bd,by]=b.split('/').map(Number);
-      return (ay-by)||(am-bm)||(ad-bd);
-    });
+    // ── Build heatmap tables from an array of records ─────────────────
+    function buildHeatmapBlock(records, sensorLabel, sensorSub, uploadKey){
+      const N=records.length;
 
-    const calRows=sortedDates.map(dateKey=>{
-      const row=dateHourMap[dateKey];
-      const dayLabel=DAYS[row.dow].slice(0,3);
-      const dateLabel=`${row.mo}/${row.dy}`;
-      const dayAvgVals=row.hours.filter(v=>v!=null);
-      const dayAvg=dayAvgVals.length?+(dayAvgVals.reduce((a,b)=>a+b,0)/dayAvgVals.length).toFixed(1):null;
-      return `<tr>${labelCell(`<span style="color:var(--text-muted);font-size:10px;">${dayLabel}</span> ${dateLabel}`)}${HOURS.map(h=>cell(row.hours[h],`${dateKey} ${h}:00 — ${row.hours[h]!=null?row.hours[h]+'%':'no data'}`)).join('')}${cell(dayAvg,'Day average',true)}</tr>`;
-    }).join('');
+      // stat cards
+      const hums=records.map(r=>r.humidity).filter(v=>v!=null);
+      const avgH=hums.length?+(hums.reduce((a,b)=>a+b,0)/hums.length).toFixed(1):null;
+      const peakH=hums.length?Math.max(...hums):null;
+      const pct60=hums.length?+((hums.filter(v=>v>=60).length/hums.length)*100).toFixed(1):null;
 
-    const calTable=`
-    <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--glass-border);background:rgba(255,255,255,.72);box-shadow:var(--glass-shadow);">
-      <div style="padding:14px 18px 10px;border-bottom:var(--rule);">
-        <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--text-muted);">Sensor 1A · Hallway Entry — ThermoPro TP358S</div>
-        <div style="font-family:'Libre Baskerville',serif;font-size:16px;font-weight:700;color:var(--text);margin-top:2px;">Humidity by Date × Hour of Day</div>
-        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">${sortedDates.length} days · ${N.toLocaleString()} readings · hover a cell for detail</div>
-      </div>
-      <div style="padding:14px 18px 18px;overflow-x:auto;">
-        <table style="border-collapse:collapse;font-size:11px;">
-          <thead>${hourHeaders}</thead>
-          <tbody>${calRows}${avgRow}</tbody>
-        </table>
-      </div>
-    </div>`;
+      const statCards=[
+        {lbl:'Avg Humidity',val:avgH!=null?avgH+'%':'—',sub:'all uploads',c:heatColor(avgH)},
+        {lbl:'Peak Humidity',val:peakH!=null?peakH+'%':'—',sub:'highest reading',c:heatColor(peakH)},
+        {lbl:'Readings ≥60%',val:pct60!=null?pct60+'%':'—',sub:'mold-risk threshold',c:'#fb923c'},
+        {lbl:'Total Readings',val:N?N.toLocaleString():'—',sub:'hourly samples',c:'#64748b'},
+      ].map(s=>`<div style="flex:1;min-width:130px;background:rgba(255,255,255,.72);border:1px solid var(--glass-border);border-left:4px solid ${s.c};border-radius:12px;padding:12px 14px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);">${s.lbl}</div>
+        <div style="font-family:'Libre Baskerville',serif;font-size:24px;font-weight:700;color:${s.c};margin:3px 0 2px;">${s.val}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${s.sub}</div>
+      </div>`).join('');
+
+      if(!N){
+        // Show upload prompt
+        const uploadHtml=uploadKey?`
+          <label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:8px;background:var(--iot-teal);color:#fff;font-size:13px;font-weight:600;letter-spacing:.5px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 2px 10px rgba(13,138,122,0.3);margin-top:12px;">
+            📂 Upload ${sensorLabel} CSV
+          </label>
+          <input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">
+        `:'';
+        return `
+        <div style="margin-bottom:28px;border-radius:16px;border:2px dashed var(--border-md);background:rgba(255,255,255,0.5);padding:28px 24px;text-align:center;">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--iot-teal);margin-bottom:6px;">${sensorLabel}</div>
+          <div style="font-size:13px;color:var(--text-muted);">${sensorSub}</div>
+          <div style="font-size:24px;margin:14px 0 6px;">📡</div>
+          <div style="font-size:13.5px;color:var(--text-mid);">No CSV data loaded for this sensor.</div>
+          ${uploadHtml}
+        </div>`;
+      }
+
+      // DOW × hour
+      const dowHourSums=Array.from({length:7},()=>Array(24).fill(0));
+      const dowHourCounts=Array.from({length:7},()=>Array(24).fill(0));
+      const dateHourMap={};
+
+      records.forEach(r=>{
+        if(r.humidity==null) return;
+        const parts=(r.date||'').split('/');
+        const timeParts=(r.time||'').split(':');
+        if(parts.length<3||timeParts.length<1) return;
+        const [mo,dy,yr]=[+parts[0],+parts[1],+parts[2]];
+        const hour=+timeParts[0];
+        if(isNaN(mo)||isNaN(dy)||isNaN(yr)||isNaN(hour)) return;
+        const dt=new Date(yr,mo-1,dy);
+        const dow=dt.getDay();
+        dowHourSums[dow][hour]+=r.humidity;
+        dowHourCounts[dow][hour]++;
+        const key=r.date;
+        if(!dateHourMap[key]) dateHourMap[key]={date:r.date,dow,mo,dy,yr,hours:Array(24).fill(null),sums:Array(24).fill(0),counts:Array(24).fill(0)};
+        dateHourMap[key].sums[hour]+=r.humidity;
+        dateHourMap[key].counts[hour]++;
+      });
+
+      const dowHour=Array.from({length:7},()=>Array(24).fill(null));
+      for(let d=0;d<7;d++) for(let h=0;h<24;h++)
+        dowHour[d][h]=dowHourCounts[d][h]>0?+(dowHourSums[d][h]/dowHourCounts[d][h]).toFixed(1):null;
+
+      Object.values(dateHourMap).forEach(row=>{
+        for(let h=0;h<24;h++)
+          row.hours[h]=row.counts[h]>0?+(row.sums[h]/row.counts[h]).toFixed(1):null;
+      });
+
+      const hSums=Array(24).fill(0), hCounts=Array(24).fill(0);
+      records.forEach(r=>{
+        if(r.humidity==null) return;
+        const h=+((r.time||'').split(':')[0]);
+        if(isNaN(h)) return;
+        hSums[h]+=r.humidity; hCounts[h]++;
+      });
+      const hourAvg=Array.from({length:24},(_,h)=>hCounts[h]>0?+(hSums[h]/hCounts[h]).toFixed(1):null);
+
+      const dowRows=DAYS.map((day,d)=>{
+        const dayAvg=dowHourCounts[d].some(c=>c>0)?+(dowHourSums[d].reduce((a,b)=>a+b,0)/dowHourCounts[d].reduce((a,b)=>a+b,0)).toFixed(1):null;
+        return `<tr>${labelCell(day)}${HOURS.map(h=>cell(dowHour[d][h],`${day} ${h}:00 — ${dowHour[d][h]!=null?dowHour[d][h]+'% avg':'no data'}`)).join('')}${cell(dayAvg,'Day avg',true)}</tr>`;
+      }).join('');
+      const avgRow=`<tr style="border-top:2px solid rgba(0,0,0,0.08);">${labelCell('Hourly Avg',true)}${HOURS.map(h=>cell(hourAvg[h],`Hour ${h}:00 — ${hourAvg[h]!=null?hourAvg[h]+'%':'no data'}`,true)).join('')}<td style="border:none;background:transparent;"></td></tr>`;
+
+      const sortedDates=Object.keys(dateHourMap).sort((a,b)=>{
+        const [am,ad,ay]=a.split('/').map(Number),[bm,bd,by]=b.split('/').map(Number);
+        return (ay-by)||(am-bm)||(ad-bd);
+      });
+      const calRows=sortedDates.map(dateKey=>{
+        const row=dateHourMap[dateKey];
+        const dayLabel=DAYS[row.dow].slice(0,3);
+        const dateLabel=`${row.mo}/${row.dy}`;
+        const dayAvgVals=row.hours.filter(v=>v!=null);
+        const dayAvg=dayAvgVals.length?+(dayAvgVals.reduce((a,b)=>a+b,0)/dayAvgVals.length).toFixed(1):null;
+        return `<tr>${labelCell(`<span style="color:var(--text-muted);font-size:10px;">${dayLabel}</span> ${dateLabel}`)}${HOURS.map(h=>cell(row.hours[h],`${dateKey} ${h}:00 — ${row.hours[h]!=null?row.hours[h]+'%':'no data'}`)).join('')}${cell(dayAvg,'Day avg',true)}</tr>`;
+      }).join('');
+
+      const uploadBtn=uploadKey?`<label for="geevon-csv-${uploadKey}" style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,138,122,0.12);color:var(--iot-teal);font-size:11.5px;font-weight:600;padding:5px 14px;border-radius:999px;cursor:pointer;border:1px solid rgba(13,138,122,0.25);margin-left:12px;">📂 Replace CSV</label><input type="file" id="geevon-csv-${uploadKey}" accept=".csv,.txt" style="display:none;">`:'';
+
+      return `
+      <div style="margin-bottom:28px;">
+        <div style="background:rgba(255,255,255,.72);border:1px solid var(--glass-border);border-top:3px solid var(--iot-teal);border-radius:14px;overflow:hidden;box-shadow:var(--glass-shadow);">
+          <div style="padding:14px 18px 12px;border-bottom:var(--rule);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--iot-teal);">${sensorLabel}</div>
+              <div style="font-family:'Libre Baskerville',serif;font-size:15px;font-weight:700;color:var(--text);margin-top:2px;">Humidity by Day of Week × Hour of Day</div>
+              <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${sensorSub} · ${N.toLocaleString()} readings · hover a cell for detail</div>
+            </div>
+            ${uploadBtn}
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;padding:14px 18px 10px;">${statCards}</div>
+          <div style="padding:6px 18px 18px;overflow-x:auto;">
+            <table style="border-collapse:collapse;font-size:10px;">
+              <thead>${hourHeaders}</thead>
+              <tbody>${dowRows}${avgRow}</tbody>
+            </table>
+          </div>
+        </div>
+        ${sortedDates.length>1?`
+        <div style="background:rgba(255,255,255,.72);border:1px solid var(--glass-border);border-radius:14px;overflow:hidden;box-shadow:var(--glass-shadow);margin-top:14px;">
+          <div style="padding:12px 18px 10px;border-bottom:var(--rule);">
+            <div style="font-size:10.5px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--iot-teal);">${sensorLabel}</div>
+            <div style="font-family:'Libre Baskerville',serif;font-size:15px;font-weight:700;color:var(--text);margin-top:2px;">Humidity by Date × Hour of Day</div>
+            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${sortedDates.length} days · hover a cell for detail</div>
+          </div>
+          <div style="padding:10px 18px 18px;overflow-x:auto;">
+            <table style="border-collapse:collapse;font-size:10px;">
+              <thead>${hourHeaders}</thead>
+              <tbody>${calRows}${avgRow}</tbody>
+            </table>
+          </div>
+        </div>`:''}
+      </div>`;
+    }
+
+    // ── Get Sensor 1A data ────────────────────────────────────────────
+    const sensor1A=typeof getActiveData==='function'?getActiveData():DATA;
+
+    // ── Render all 4 sensors ──────────────────────────────────────────
+    const block1A=buildHeatmapBlock(
+      sensor1A,
+      'Sensor 1A · Hallway Entry — ThermoPro TP358S',
+      'dashboard/CSV data source',
+      null // uses the existing upload button in the upload bar
+    );
+    const blockG1=buildHeatmapBlock(
+      window.GEEVON_DATA.g1||[],
+      'Geevon Sensor 1 — Master Bedroom',
+      'Geevon wireless hygrometer',
+      'g1'
+    );
+    const blockG2=buildHeatmapBlock(
+      window.GEEVON_DATA.g2||[],
+      'Geevon Sensor 2 — Living / Dining Room',
+      'Geevon wireless hygrometer',
+      'g2'
+    );
+    const blockG3=buildHeatmapBlock(
+      window.GEEVON_DATA.g3||[],
+      'Geevon Sensor 3 — Second Bedroom',
+      'Geevon wireless hygrometer',
+      'g3'
+    );
 
     statsEl.innerHTML=`
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">${statCards}</div>
       ${legend}
-      ${dowTable}
-      ${calTable}
+      <div style="font-family:'Libre Baskerville',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid var(--iot-teal);">📊 Sensor Data Visualizations</div>
+      ${block1A}
+      ${blockG1}
+      ${blockG2}
+      ${blockG3}
     `;
+
+    // Re-bind Geevon upload inputs after innerHTML update
+    setTimeout(window.initGeevonUploads, 50);
   };
   window.openSensorModal=function(){
     // Pre-fill inputs from stored values
