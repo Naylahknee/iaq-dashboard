@@ -999,69 +999,101 @@
   }
 
 /* ═══════════════════ SIDEBAR ═══════════════════ */
-.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;opacity:0;pointer-events:none;transition:opacity 200ms ease;}
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1000;opacity:0;pointer-events:none;transition:opacity 180ms ease;}
 .sidebar-overlay.open{opacity:1;pointer-events:all;}
 
 .sidebar{
-  position:fixed;top:0;left:0;height:100%;width:280px;
-  background:var(--surface);border-right:1px solid var(--border);
-  z-index:1001;transform:translateX(-100%);transition:transform 240ms cubic-bezier(0.4,0,0.2,1);
+  position:fixed;top:0;left:0;height:100%;width:260px;
+  background:var(--surface2,#F5F5F5);
+  z-index:1001;transform:translateX(-100%);transition:transform 220ms cubic-bezier(0.4,0,0.2,1);
   display:flex;flex-direction:column;overflow:hidden;
 }
 .sidebar.open{transform:translateX(0);}
 
+/* header row — logo + close */
 .sidebar-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:20px 20px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+  padding:14px 12px 14px 16px;flex-shrink:0;
 }
-.sidebar-logo{display:flex;align-items:center;gap:10px;}
-.sidebar-logo-icon{font-size:22px;}
-.sidebar-logo-text{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.02em;}
-.sidebar-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:4px 8px;border-radius:4px;line-height:1;}
-.sidebar-close:hover{background:var(--surface2);color:var(--text);}
+.sidebar-logo{display:flex;align-items:center;gap:8px;}
+.sidebar-logo svg{color:var(--g-indigo);flex-shrink:0;}
+.sidebar-logo-text{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text);letter-spacing:-0.02em;line-height:1;}
+.sidebar-close{
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:none;cursor:pointer;color:var(--text-muted);
+  width:32px;height:32px;border-radius:6px;flex-shrink:0;
+}
+.sidebar-close:hover{background:var(--border);color:var(--text);}
+.sidebar-close svg{pointer-events:none;}
 
-.sidebar-section{padding:16px 12px 8px;flex-shrink:0;}
-.sidebar-section:first-of-type{flex:1;overflow-y:auto;}
-.sidebar-section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:0 8px;margin-bottom:4px;}
+/* scrollable body */
+.sidebar-body{flex:1;overflow-y:auto;padding:6px 8px;}
 
-.sidebar-nav{display:flex;flex-direction:column;gap:2px;}
+/* section groups */
+.sidebar-group{margin-bottom:4px;}
+.sidebar-group-label{
+  font-size:11px;font-weight:600;color:var(--text-muted);
+  letter-spacing:0.04em;text-transform:uppercase;
+  padding:8px 8px 4px;
+}
+
+/* nav items — Claude-style: icon + label, hover bg, active left accent */
+.sidebar-nav{display:flex;flex-direction:column;gap:1px;}
 .sidebar-nav-item{
-  display:flex;align-items:center;gap:10px;
+  display:flex;align-items:center;gap:8px;
   background:none;border:none;cursor:pointer;
-  font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--text-mid);
-  padding:9px 12px;border-radius:8px;text-align:left;width:100%;transition:all 120ms ease;
+  font-family:var(--font-body);font-size:13.5px;font-weight:400;color:var(--text-mid);
+  padding:7px 10px;border-radius:7px;text-align:left;width:100%;
+  transition:background 100ms ease,color 100ms ease;
+  position:relative;
 }
-.sidebar-nav-item:hover{background:var(--surface2);color:var(--text);}
-.sidebar-nav-item.active{background:var(--g-indigo-lt);color:var(--g-indigo);font-weight:600;}
-.sidebar-nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-nav-item svg{flex-shrink:0;opacity:.7;}
+.sidebar-nav-item:hover{background:var(--border);color:var(--text);}
+.sidebar-nav-item:hover svg{opacity:1;}
+.sidebar-nav-item.active{
+  background:var(--surface);color:var(--text);font-weight:500;
+  box-shadow:inset 0 0 0 1px var(--border-md,#D4D4DC);
+}
+.sidebar-nav-item.active svg{opacity:1;color:var(--g-indigo);}
+.sidebar-nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:18px;background:var(--g-indigo);border-radius:0 2px 2px 0;
+}
 
-.sidebar-upload-btn{color:var(--g-indigo) !important;}
-.sidebar-upload-btn:hover{background:var(--g-indigo-lt) !important;}
+/* divider between groups */
+.sidebar-divider{height:1px;background:var(--border);margin:8px 8px;}
 
+/* footer — device info */
 .sidebar-footer{
-  padding:16px 20px;border-top:1px solid var(--border);flex-shrink:0;
-  display:flex;flex-direction:column;gap:8px;
+  padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0;
+  display:flex;flex-direction:column;gap:6px;
 }
-.sidebar-footer-stat{display:flex;justify-content:space-between;align-items:center;}
-.sidebar-footer-label{font-size:11px;color:var(--text-muted);font-weight:500;}
-.sidebar-footer-val{font-size:12px;color:var(--text-mid);font-family:var(--font-mono);}
+.sidebar-footer-row{display:flex;align-items:center;gap:8px;}
+.sidebar-footer-row svg{color:var(--text-muted);flex-shrink:0;}
+.sidebar-footer-text{font-size:12px;color:var(--text-muted);font-family:var(--font-body);}
+.sidebar-footer-text strong{color:var(--text-mid);font-weight:500;}
 
-/* Hamburger button */
-.hamburger-btn{
-  display:flex;flex-direction:column;justify-content:center;gap:5px;
-  background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;
-  width:40px;height:40px;flex-shrink:0;margin-right:12px;
+/* Sidebar toggle button — Claude-style panel icon */
+.sidebar-toggle-btn{
+  display:flex;align-items:center;justify-content:center;
+  background:none;border:none;cursor:pointer;
+  color:var(--text-muted);width:36px;height:36px;border-radius:7px;
+  flex-shrink:0;margin-right:10px;transition:background 100ms,color 100ms;
 }
-.hamburger-btn:hover{background:rgba(0,0,0,0.06);}
-.hamburger-btn span{display:block;height:2px;background:var(--text);border-radius:2px;transition:all 120ms ease;}
+.sidebar-toggle-btn:hover{background:var(--surface2);color:var(--text);}
+.sidebar-toggle-btn svg{pointer-events:none;}
 
-/* make header inner flex for hamburger alignment */
+/* header inner flex */
 .doc-header-inner{display:flex;align-items:flex-start;}
 .doc-header-inner > div:nth-child(2){flex:1;}
 
+/* dark mode */
 @media(prefers-color-scheme:dark){
-  .hamburger-btn span{background:var(--text);}
+  .sidebar{background:var(--surface2);}
+  .sidebar-nav-item.active{background:rgba(255,255,255,0.06);}
 }
+:root[data-theme="dark"] .sidebar{background:var(--surface2);}
+:root[data-theme="dark"] .sidebar-nav-item.active{background:rgba(255,255,255,0.06);}
 
 </style>
 
@@ -1075,66 +1107,82 @@
 <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navigation">
   <div class="sidebar-header">
     <div class="sidebar-logo">
-      <span class="sidebar-logo-icon">🌡️</span>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><circle cx="18.5" cy="5.5" r="2.5"/></svg>
       <span class="sidebar-logo-text">IAQ Monitor</span>
     </div>
-    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close sidebar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-section-label">Views</div>
-    <nav class="sidebar-nav">
-      <button class="sidebar-nav-item active" onclick="sidebarTab('overview')">
-        <span class="sidebar-nav-icon">📊</span> Overview
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('derived')">
-        <span class="sidebar-nav-icon">🌡️</span> Derived Metrics
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('daily')">
-        <span class="sidebar-nav-icon">📅</span> Daily Summary
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('table')">
-        <span class="sidebar-nav-icon">📋</span> Data Log
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('rawdata')">
-        <span class="sidebar-nav-icon">🔢</span> Raw Data
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('mold')">
-        <span class="sidebar-nav-icon">⚠️</span> Mold Events
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('heatmap')">
-        <span class="sidebar-nav-icon">🗺️</span> Room Map
-      </button>
-      <button class="sidebar-nav-item" onclick="sidebarTab('export')">
-        <span class="sidebar-nav-icon">📤</span> Export
-      </button>
-    </nav>
-  </div>
+  <div class="sidebar-body">
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Views</div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-nav-item active" onclick="sidebarTab('overview')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Overview
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('derived')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          Derived Metrics
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('daily')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+          Daily Summary
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('table')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h18v18H3z"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/></svg>
+          Data Log
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('rawdata')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Raw Data
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('mold')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+          Mold Events
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('heatmap')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Room Map
+        </button>
+        <button class="sidebar-nav-item" onclick="sidebarTab('export')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Export
+        </button>
+      </nav>
+    </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-section-label">Owner</div>
-    <nav class="sidebar-nav">
-      <button class="sidebar-nav-item sidebar-upload-btn" onclick="closeSidebar();openUploadModal()">
-        <span class="sidebar-nav-icon">⬆️</span> Upload CSV Data
-      </button>
-      <button class="sidebar-nav-item" onclick="closeSidebar();triggerOwnerAccess()">
-        <span class="sidebar-nav-icon" id="sidebar-lock-icon">🔒</span> <span id="sidebar-lock-label">Owner Access</span>
-      </button>
-    </nav>
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-group">
+      <div class="sidebar-group-label">Owner</div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-nav-item" onclick="closeSidebar();openUploadModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload CSV Data
+        </button>
+        <button class="sidebar-nav-item" id="sidebar-lock-btn" onclick="closeSidebar();triggerOwnerAccess()">
+          <svg id="sidebar-lock-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="sidebar-lock-label">Owner Access</span>
+        </button>
+      </nav>
+    </div>
   </div>
 
   <div class="sidebar-footer">
-    <div class="sidebar-footer-stat">
-      <span class="sidebar-footer-label">Device</span>
-      <span class="sidebar-footer-val">ThermoPro TP358S</span>
+    <div class="sidebar-footer-row">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6"/><path d="M9 13h6"/><path d="M9 17h4"/></svg>
+      <span class="sidebar-footer-text">ThermoPro <strong>TP358S</strong></span>
     </div>
-    <div class="sidebar-footer-stat">
-      <span class="sidebar-footer-label">Period</span>
-      <span class="sidebar-footer-val">Mar 11 – Apr 7, 2026</span>
+    <div class="sidebar-footer-row">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+      <span class="sidebar-footer-text">Mar 11 – Apr 7, 2026</span>
     </div>
-    <div class="sidebar-footer-stat">
-      <span class="sidebar-footer-label">Status</span>
-      <span class="sidebar-footer-val" style="color:var(--g-indigo)">● Active</span>
+    <div class="sidebar-footer-row">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <span class="sidebar-footer-text" style="color:var(--g-indigo)">Monitoring Active</span>
     </div>
   </div>
 </aside>
@@ -1156,8 +1204,11 @@
 <!-- HEADER -->
 <header class="doc-header">
   <div class="doc-header-inner">
-    <button class="hamburger-btn" onclick="openSidebar()" aria-label="Open navigation menu">
-      <span></span><span></span><span></span>
+    <button class="sidebar-toggle-btn" onclick="openSidebar()" aria-label="Open navigation">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 3v18"/>
+      </svg>
     </button>
     <div>
       <div class="doc-label">Indoor Air Quality Monitoring Report</div>
@@ -3427,9 +3478,9 @@ const _origVerifyPin=verifyPin;
 window.verifyPin=function(){
   _origVerifyPin();
   if(ownerUnlocked){
-    const icon=document.getElementById('sidebar-lock-icon');
+    const svg=document.getElementById('sidebar-lock-svg');
     const lbl=document.getElementById('sidebar-lock-label');
-    if(icon)icon.textContent='🔓';
+    if(svg)svg.innerHTML='<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>';
     if(lbl)lbl.textContent='Owner (Unlocked)';
   }
 };
