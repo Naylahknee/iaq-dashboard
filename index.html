@@ -998,10 +998,146 @@
     .g-toolbar-controls{gap:8px;}
   }
 
+/* ═══════════════════ SIDEBAR ═══════════════════ */
+.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;opacity:0;pointer-events:none;transition:opacity 200ms ease;}
+.sidebar-overlay.open{opacity:1;pointer-events:all;}
+
+.sidebar{
+  position:fixed;top:0;left:0;height:100%;width:280px;
+  background:var(--surface);border-right:1px solid var(--border);
+  z-index:1001;transform:translateX(-100%);transition:transform 240ms cubic-bezier(0.4,0,0.2,1);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.sidebar.open{transform:translateX(0);}
+
+.sidebar-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 20px 16px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.sidebar-logo{display:flex;align-items:center;gap:10px;}
+.sidebar-logo-icon{font-size:22px;}
+.sidebar-logo-text{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.02em;}
+.sidebar-close{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:4px 8px;border-radius:4px;line-height:1;}
+.sidebar-close:hover{background:var(--surface2);color:var(--text);}
+
+.sidebar-section{padding:16px 12px 8px;flex-shrink:0;}
+.sidebar-section:first-of-type{flex:1;overflow-y:auto;}
+.sidebar-section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted);padding:0 8px;margin-bottom:4px;}
+
+.sidebar-nav{display:flex;flex-direction:column;gap:2px;}
+.sidebar-nav-item{
+  display:flex;align-items:center;gap:10px;
+  background:none;border:none;cursor:pointer;
+  font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--text-mid);
+  padding:9px 12px;border-radius:8px;text-align:left;width:100%;transition:all 120ms ease;
+}
+.sidebar-nav-item:hover{background:var(--surface2);color:var(--text);}
+.sidebar-nav-item.active{background:var(--g-indigo-lt);color:var(--g-indigo);font-weight:600;}
+.sidebar-nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+
+.sidebar-upload-btn{color:var(--g-indigo) !important;}
+.sidebar-upload-btn:hover{background:var(--g-indigo-lt) !important;}
+
+.sidebar-footer{
+  padding:16px 20px;border-top:1px solid var(--border);flex-shrink:0;
+  display:flex;flex-direction:column;gap:8px;
+}
+.sidebar-footer-stat{display:flex;justify-content:space-between;align-items:center;}
+.sidebar-footer-label{font-size:11px;color:var(--text-muted);font-weight:500;}
+.sidebar-footer-val{font-size:12px;color:var(--text-mid);font-family:var(--font-mono);}
+
+/* Hamburger button */
+.hamburger-btn{
+  display:flex;flex-direction:column;justify-content:center;gap:5px;
+  background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;
+  width:40px;height:40px;flex-shrink:0;margin-right:12px;
+}
+.hamburger-btn:hover{background:rgba(0,0,0,0.06);}
+.hamburger-btn span{display:block;height:2px;background:var(--text);border-radius:2px;transition:all 120ms ease;}
+
+/* make header inner flex for hamburger alignment */
+.doc-header-inner{display:flex;align-items:flex-start;}
+.doc-header-inner > div:nth-child(2){flex:1;}
+
+@media(prefers-color-scheme:dark){
+  .hamburger-btn span{background:var(--text);}
+}
+
 </style>
 
 </head>
 <body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Navigation">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <span class="sidebar-logo-icon">🌡️</span>
+      <span class="sidebar-logo-text">IAQ Monitor</span>
+    </div>
+    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Views</div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-nav-item active" onclick="sidebarTab('overview')">
+        <span class="sidebar-nav-icon">📊</span> Overview
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('derived')">
+        <span class="sidebar-nav-icon">🌡️</span> Derived Metrics
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('daily')">
+        <span class="sidebar-nav-icon">📅</span> Daily Summary
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('table')">
+        <span class="sidebar-nav-icon">📋</span> Data Log
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('rawdata')">
+        <span class="sidebar-nav-icon">🔢</span> Raw Data
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('mold')">
+        <span class="sidebar-nav-icon">⚠️</span> Mold Events
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('heatmap')">
+        <span class="sidebar-nav-icon">🗺️</span> Room Map
+      </button>
+      <button class="sidebar-nav-item" onclick="sidebarTab('export')">
+        <span class="sidebar-nav-icon">📤</span> Export
+      </button>
+    </nav>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Owner</div>
+    <nav class="sidebar-nav">
+      <button class="sidebar-nav-item sidebar-upload-btn" onclick="closeSidebar();openUploadModal()">
+        <span class="sidebar-nav-icon">⬆️</span> Upload CSV Data
+      </button>
+      <button class="sidebar-nav-item" onclick="closeSidebar();triggerOwnerAccess()">
+        <span class="sidebar-nav-icon" id="sidebar-lock-icon">🔒</span> <span id="sidebar-lock-label">Owner Access</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-footer-stat">
+      <span class="sidebar-footer-label">Device</span>
+      <span class="sidebar-footer-val">ThermoPro TP358S</span>
+    </div>
+    <div class="sidebar-footer-stat">
+      <span class="sidebar-footer-label">Period</span>
+      <span class="sidebar-footer-val">Mar 11 – Apr 7, 2026</span>
+    </div>
+    <div class="sidebar-footer-stat">
+      <span class="sidebar-footer-label">Status</span>
+      <span class="sidebar-footer-val" style="color:var(--g-indigo)">● Active</span>
+    </div>
+  </div>
+</aside>
 
 <!-- LIVE CLOCK BAR -->
 <div class="clock-bar">
@@ -1020,6 +1156,9 @@
 <!-- HEADER -->
 <header class="doc-header">
   <div class="doc-header-inner">
+    <button class="hamburger-btn" onclick="openSidebar()" aria-label="Open navigation menu">
+      <span></span><span></span><span></span>
+    </button>
     <div>
       <div class="doc-label">Indoor Air Quality Monitoring Report</div>
       <h1 class="doc-title">Indoor Air Quality Report</h1>
@@ -2871,11 +3010,12 @@ function generateDocId(){const D=DATA;if(!D.length)return'IAQ-TP358S-'+new Date(
 function updateDocId(){document.getElementById('doc-id').textContent=generateDocId();buildComplaintText();}
 
 // ═══════════════════ OWNER PIN ═══════════════════
-const OWNER_PIN='2611';let ownerUnlocked=false;
+const OWNER_PIN='6653';let ownerUnlocked=false;
 function triggerOwnerAccess(){if(ownerUnlocked){document.getElementById('upload-bar-el').classList.toggle('owner-unlocked');return;}document.getElementById('pin-modal').classList.add('open');document.body.style.overflow='hidden';document.getElementById('pin-input').value='';document.getElementById('pin-error').textContent='';setTimeout(()=>document.getElementById('pin-input').focus(),100);}
 function closePinModal(){document.getElementById('pin-modal').classList.remove('open');document.body.style.overflow='';document.getElementById('pin-input').value='';document.getElementById('pin-error').textContent='';}
 function verifyPin(){const entered=document.getElementById('pin-input').value.trim();if(entered===OWNER_PIN){ownerUnlocked=true;closePinModal();document.getElementById('upload-bar-el').classList.add('owner-unlocked');document.getElementById('owner-hint').title='Owner access (unlocked)';document.getElementById('owner-hint').style.color='var(--iot-teal)';}else{document.getElementById('pin-error').textContent='Incorrect PIN. Try again.';document.getElementById('pin-input').value='';document.getElementById('pin-input').focus();}}
 function openUploadModal(){
+  if(!ownerUnlocked){triggerOwnerAccess();return;}
   document.body.style.overflow='hidden';
   document.getElementById('upload-modal').classList.add('open');
   pendingCSV=null;
@@ -3251,6 +3391,48 @@ document.addEventListener('DOMContentLoaded', function(){
     if(e.target === this) dismissIaqAlert();
   });
 });
+
+// ═══════════════════ SIDEBAR ═══════════════════
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  // sync active tab
+  const active=document.querySelector('.g-tab.active');
+  if(active){
+    const tab=active.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
+    document.querySelectorAll('.sidebar-nav-item').forEach(el=>{
+      el.classList.toggle('active', el.getAttribute('onclick')?.includes("'"+tab+"'"));
+    });
+  }
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function sidebarTab(tab){
+  // find and click the matching g-tab
+  document.querySelectorAll('.g-tab').forEach(btn=>{
+    if(btn.getAttribute('onclick')?.includes("'"+tab+"'")){btn.click();}
+  });
+  // update sidebar active state
+  document.querySelectorAll('.sidebar-nav-item').forEach(el=>{
+    el.classList.toggle('active', el.getAttribute('onclick')?.includes("'"+tab+"'"));
+  });
+  closeSidebar();
+}
+// Update sidebar lock icon when owner unlocks
+const _origVerifyPin=verifyPin;
+window.verifyPin=function(){
+  _origVerifyPin();
+  if(ownerUnlocked){
+    const icon=document.getElementById('sidebar-lock-icon');
+    const lbl=document.getElementById('sidebar-lock-label');
+    if(icon)icon.textContent='🔓';
+    if(lbl)lbl.textContent='Owner (Unlocked)';
+  }
+};
 
 // ═══════════════════ MOLD EVENTS ═══════════════════
 function buildMoldEventHumidity(){
