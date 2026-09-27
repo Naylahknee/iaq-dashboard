@@ -1086,6 +1086,8 @@ body.sidebar-open{padding-left:260px;}
 }
 .sidebar-toggle-btn:hover{background:var(--surface2);color:var(--text);}
 .sidebar-toggle-btn svg{pointer-events:none;}
+/* Hide header open-button when sidebar is already open */
+body.sidebar-open .doc-header .sidebar-toggle-btn{display:none;}
 
 /* header inner flex */
 .doc-header-inner{display:flex;align-items:flex-start;}
@@ -3443,6 +3445,8 @@ function loadCSV(){
   // Reset raw table so it rebuilds with new data
   const rawBody=document.getElementById('raw-table-body');
   if(rawBody){rawBody.innerHTML='';rawBody.dataset.built='false';}
+  // Persist uploaded data so it survives page refreshes
+  try{localStorage.setItem('iaq-saved-data',JSON.stringify(finalData));localStorage.setItem('iaq-saved-label',label);}catch(e){}
   initDashboard(finalData, label);
 }
 
@@ -3660,7 +3664,10 @@ function buildMoldEventHumidity(){
 }
 
 // ═══════════════════ BOOT ═══════════════════
-initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');
+// Restore previously uploaded data if available, otherwise fall back to seed
+try{const _sd=localStorage.getItem('iaq-saved-data'),_sl=localStorage.getItem('iaq-saved-label');
+  if(_sd){initDashboard(JSON.parse(_sd),_sl||'Saved Data');}else{initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');}}
+catch(e){initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');}
 // Pre-render heat map so it's ready the moment user clicks the tab
 setTimeout(function(){ if(typeof renderHeatMap==='function')renderHeatMap(); },200);
 (function(){
