@@ -1,3 +1,5 @@
 wrangler.jsonc
+worker.js
+.assetsignore
 .git/**
 .github/**
