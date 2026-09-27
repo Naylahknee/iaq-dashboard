@@ -1793,6 +1793,19 @@ body.sidebar-open{padding-left:260px;}
     <div class="sheet-handle"></div>
     <div class="modal-title">Upload Sensor Data (CSV)</div>
     <p class="modal-sub">Upload a ThermoPro or compatible sensor export. New data will merge with or replace the existing dataset.</p>
+    <!-- Source tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button id="src-local-btn" onclick="setUploadSource('local')" style="flex:1;padding:8px 0;border-radius:8px;border:1.5px solid var(--g-indigo);background:var(--g-indigo);color:#fff;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.5px;">
+        &#128196; Local File
+      </button>
+      <button id="src-gdrive-btn" onclick="setUploadSource('gdrive')" style="flex:1;padding:8px 0;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px"><path d="M12 2L2 19.5h8l2-4 2 4h8L12 2z"/><path d="M2 19.5h20"/><path d="M8 19.5l4-8 4 8"/></svg>
+        Google Drive
+      </button>
+    </div>
+
+    <!-- Local file drop zone -->
+    <div id="drop-zone-local">
     <div class="modal-drop" id="drop-zone"
          onclick="window.requirePin(()=>triggerFilePick())"
          ondragover="event.preventDefault();this.classList.add('drag-over')"
@@ -1802,6 +1815,27 @@ body.sidebar-open{padding-left:260px;}
       <div class="modal-drop-text">Click to browse or drag &amp; drop your CSV file here</div>
       <div class="modal-drop-sub">CSV, TSV, or any sensor app export</div>
     </div>
+    </div>
+
+    <!-- Google Drive picker zone -->
+    <div id="drop-zone-gdrive" style="display:none;">
+      <div class="modal-drop" onclick="openGDrivePicker()" style="cursor:pointer;border-color:#4285F4;">
+        <div class="modal-drop-icon" style="font-size:2rem;">
+          <svg width="36" height="36" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L30 48H0c0 1.55.4 3.1 1.2 4.5l5.4 14.35z" fill="#0066DA"/>
+            <path d="M43.65 25L27 0c-1.35.8-2.5 1.9-3.3 3.3L1.2 43.5A9 9 0 000 48h30l13.65-23z" fill="#00AC47"/>
+            <path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5H57l6.55 23.8z" fill="#EA4335"/>
+            <path d="M43.65 25L57 48h30L60.3 3.3c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25z" fill="#00832D"/>
+            <path d="M30 48H0l16.85 28.8 3.3 3.3L37 55.5 30 48z" fill="#2684FC"/>
+            <path d="M57 48H30l13 23.5 13-23.5z" fill="#FFBA00"/>
+          </svg>
+        </div>
+        <div class="modal-drop-text" style="margin-top:8px;">Click to open Google Drive</div>
+        <div class="modal-drop-sub">Select a CSV file from your Drive</div>
+      </div>
+      <p id="gdrive-status" style="font-size:12px;color:var(--text-muted);text-align:center;margin:6px 0 0;min-height:18px;"></p>
+    </div>
+
     <input type="file" id="csv-file-input" accept=".csv,.txt,.tsv,.tab" style="display:none" onchange="handleFileSelect(event)">
     <div class="modal-format">
       <strong>Accepts any CSV, TSV, or text file with these columns (names are flexible):</strong><br>
@@ -3062,6 +3096,112 @@ function printReport(){window.print();}
 // ═══════════════════ DOC ID ═══════════════════
 function generateDocId(){const D=DATA;if(!D.length)return'IAQ-TP358S-'+new Date().toISOString().slice(0,10).replace(/-/g,'');const dMap={};D.forEach(r=>{dMap[r.date]=1;});const days=Object.keys(dMap).sort(),first=days[0]?.replace(/\//g,'')||'';return'IAQ-TP358S-'+first;}
 function updateDocId(){document.getElementById('doc-id').textContent=generateDocId();buildComplaintText();}
+
+// ═══════════════════ UPLOAD SOURCE TOGGLE ═══════════════════
+function setUploadSource(src){
+  const localBtn=document.getElementById('src-local-btn');
+  const gdriveBtn=document.getElementById('src-gdrive-btn');
+  const localZone=document.getElementById('drop-zone-local');
+  const gdriveZone=document.getElementById('drop-zone-gdrive');
+  if(src==='local'){
+    localBtn.style.background='var(--g-indigo)';localBtn.style.color='#fff';localBtn.style.borderColor='var(--g-indigo)';
+    gdriveBtn.style.background='transparent';gdriveBtn.style.color='var(--text)';gdriveBtn.style.borderColor='var(--border)';
+    localZone.style.display='';gdriveZone.style.display='none';
+  } else {
+    gdriveBtn.style.background='#4285F4';gdriveBtn.style.color='#fff';gdriveBtn.style.borderColor='#4285F4';
+    localBtn.style.background='transparent';localBtn.style.color='var(--text)';localBtn.style.borderColor='var(--border)';
+    gdriveZone.style.display='';localZone.style.display='none';
+    loadGDriveApi();
+  }
+}
+
+// ═══════════════════ GOOGLE DRIVE PICKER ═══════════════════
+// ── CONFIGURE THESE ──────────────────────────────────────────
+// Get these from https://console.cloud.google.com/
+//   1. Create/select a project
+//   2. Enable "Google Picker API" and "Google Drive API"
+//   3. Create an API Key (restrict to Picker API + your domain)
+//   4. Create an OAuth 2.0 Client ID (Web, add your domain to origins)
+const GDRIVE_API_KEY   = 'YOUR_GOOGLE_API_KEY';      // ← replace
+const GDRIVE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID';    // ← replace
+// ─────────────────────────────────────────────────────────────
+
+let gdriveApiLoaded=false, gdriveTokenClient=null, gdriveAccessToken=null;
+
+function loadGDriveApi(){
+  if(gdriveApiLoaded) return;
+  const s=document.createElement('script');
+  s.src='https://apis.google.com/js/api.js';
+  s.onload=()=>{
+    gapi.load('picker',()=>{gdriveApiLoaded=true;});
+  };
+  document.head.appendChild(s);
+  // Load GIS token client
+  const s2=document.createElement('script');
+  s2.src='https://accounts.google.com/gsi/client';
+  s2.onload=()=>{
+    gdriveTokenClient=google.accounts.oauth2.initTokenClient({
+      client_id:GDRIVE_CLIENT_ID,
+      scope:'https://www.googleapis.com/auth/drive.readonly',
+      callback:''
+    });
+  };
+  document.head.appendChild(s2);
+}
+
+function openGDrivePicker(){
+  if(GDRIVE_API_KEY==='YOUR_GOOGLE_API_KEY'||GDRIVE_CLIENT_ID==='YOUR_GOOGLE_CLIENT_ID'){
+    document.getElementById('gdrive-status').textContent='⚠ Google API credentials not configured yet.';
+    return;
+  }
+  if(!gdriveApiLoaded){loadGDriveApi();document.getElementById('gdrive-status').textContent='Loading Google APIs…';setTimeout(openGDrivePicker,1200);return;}
+  document.getElementById('gdrive-status').textContent='Signing in…';
+  gdriveTokenClient.callback=(resp)=>{
+    if(resp.error){document.getElementById('gdrive-status').textContent='Sign-in cancelled.';return;}
+    gdriveAccessToken=resp.access_token;
+    _showDrivePicker();
+  };
+  if(!gdriveAccessToken){gdriveTokenClient.requestAccessToken({prompt:'consent'});}
+  else{_showDrivePicker();}
+}
+
+function _showDrivePicker(){
+  document.getElementById('gdrive-status').textContent='';
+  const view=new google.picker.View(google.picker.ViewId.DOCS);
+  view.setMimeTypes('text/csv,text/tab-separated-values,text/plain,application/vnd.google-apps.spreadsheet');
+  const picker=new google.picker.PickerBuilder()
+    .enableFeature(google.picker.Feature.NAV_HIDDEN)
+    .setTitle('Select your sensor CSV file')
+    .setOAuthToken(gdriveAccessToken)
+    .setDeveloperKey(GDRIVE_API_KEY)
+    .addView(view)
+    .addView(new google.picker.DocsUploadView())
+    .setCallback(_drivePickerCallback)
+    .build();
+  picker.setVisible(true);
+}
+
+function _drivePickerCallback(data){
+  if(data.action===google.picker.Action.PICKED){
+    const file=data.docs[0];
+    document.getElementById('gdrive-status').textContent=`Loading "${file.name}"…`;
+    // If it's a Google Sheet, export as CSV
+    const isSheet=file.mimeType==='application/vnd.google-apps.spreadsheet';
+    const url=isSheet
+      ?`https://www.googleapis.com/drive/v3/files/${file.id}/export?mimeType=text%2Fcsv`
+      :`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
+    fetch(url,{headers:{Authorization:`Bearer ${gdriveAccessToken}`}})
+      .then(r=>{if(!r.ok)throw new Error('Drive download failed: '+r.status);return r.text();})
+      .then(text=>{
+        const blob=new Blob([text],{type:'text/csv'});
+        const f=new File([blob],file.name,{type:'text/csv'});
+        document.getElementById('gdrive-status').textContent='';
+        setUploadSource('local'); // switch back to show file name
+        readFile(f);
+      })
+      .catch(e=>{document.getElementById('gdrive-status').textContent='Error: '+e.message;});
+  }
+}
 
 // ═══════════════════ OWNER PIN ═══════════════════
 const OWNER_PIN='6653';let ownerUnlocked=false;
