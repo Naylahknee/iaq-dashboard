@@ -1160,10 +1160,10 @@ body.sidebar-open{padding-left:260px;}
 
     <div class="sidebar-divider"></div>
 
-    <div class="sidebar-group">
-      <div class="sidebar-group-label">Owner</div>
+    <div class="sidebar-group" id="sidebar-owner-group">
+      <div class="sidebar-group-label" id="sidebar-owner-label" style="display:none">Owner</div>
       <nav class="sidebar-nav">
-        <button class="sidebar-nav-item" onclick="closeSidebar();openUploadModal()">
+        <button class="sidebar-nav-item" id="sidebar-upload-btn" style="display:none" onclick="closeSidebar();openUploadModal()">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Upload CSV Data
         </button>
@@ -1235,8 +1235,8 @@ body.sidebar-open{padding-left:260px;}
   </div>
 </header>
 
-<!-- UPLOAD BAR (owner-only) -->
-<div class="upload-bar" id="upload-bar-el">
+<!-- UPLOAD BAR (owner-only, hidden until unlocked) -->
+<div class="upload-bar" id="upload-bar-el" style="display:none">
   <div class="upload-inner">
     <span class="upload-label-text">&#128274; Owner — Data Source</span>
     <span class="upload-desc">Loaded: <strong id="upload-loaded-name">ThermoProSensor_export_TP358S_04062026.csv</strong></span>
@@ -3067,7 +3067,25 @@ function updateDocId(){document.getElementById('doc-id').textContent=generateDoc
 const OWNER_PIN='6653';let ownerUnlocked=false;
 function triggerOwnerAccess(){if(ownerUnlocked){document.getElementById('upload-bar-el').classList.toggle('owner-unlocked');return;}document.getElementById('pin-modal').classList.add('open');document.body.style.overflow='hidden';document.getElementById('pin-input').value='';document.getElementById('pin-error').textContent='';setTimeout(()=>document.getElementById('pin-input').focus(),100);}
 function closePinModal(){document.getElementById('pin-modal').classList.remove('open');document.body.style.overflow='';document.getElementById('pin-input').value='';document.getElementById('pin-error').textContent='';}
-function verifyPin(){const entered=document.getElementById('pin-input').value.trim();if(entered===OWNER_PIN){ownerUnlocked=true;closePinModal();document.getElementById('upload-bar-el').classList.add('owner-unlocked');document.getElementById('owner-hint').title='Owner access (unlocked)';document.getElementById('owner-hint').style.color='var(--iot-teal)';}else{document.getElementById('pin-error').textContent='Incorrect PIN. Try again.';document.getElementById('pin-input').value='';document.getElementById('pin-input').focus();}}
+function verifyPin(){const entered=document.getElementById('pin-input').value.trim();if(entered===OWNER_PIN){ownerUnlocked=true;closePinModal();_showOwnerUI(true);}else{document.getElementById('pin-error').textContent='Incorrect PIN. Try again.';document.getElementById('pin-input').value='';document.getElementById('pin-input').focus();}}
+function _showOwnerUI(on){
+  // upload bar
+  const bar=document.getElementById('upload-bar-el');
+  if(bar) bar.style.display=on?'':'none';
+  // sidebar upload button + owner label
+  const uploadBtn=document.getElementById('sidebar-upload-btn');
+  const ownerLabel=document.getElementById('sidebar-owner-label');
+  if(uploadBtn) uploadBtn.style.display=on?'':'none';
+  if(ownerLabel) ownerLabel.style.display=on?'':'none';
+  // lock icon changes to unlocked state
+  const lockSvg=document.getElementById('sidebar-lock-svg');
+  const lockLabel=document.getElementById('sidebar-lock-label');
+  if(lockLabel) lockLabel.textContent=on?'Locked (owner)':'Owner Access';
+  if(lockSvg && on) lockSvg.innerHTML='<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>';
+  // owner hint color
+  const hint=document.getElementById('owner-hint');
+  if(hint){hint.title=on?'Owner access (unlocked)':'Owner access';hint.style.color=on?'var(--iot-teal)':'';}
+}
 function openUploadModal(){
   if(!ownerUnlocked){triggerOwnerAccess();return;}
   document.body.style.overflow='hidden';
