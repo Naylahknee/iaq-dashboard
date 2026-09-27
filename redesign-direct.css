@@ -1,0 +1,68 @@
+/* IAQ dashboard direct redesign — presentation only. No data/calculation changes. */
+@media (min-width: 980px){
+  body{padding-left:260px;background:#f7f8fa;}
+  .sidebar{transform:none!important;width:260px!important;box-shadow:none!important;border-right:1px solid var(--border);}
+  .sidebar-overlay,.sidebar-toggle-btn{display:none!important;}
+  .clock-bar{display:none!important;}
+  .doc-header{margin:0!important;background:var(--surface);border-bottom:1px solid var(--border);}
+  .doc-header-inner{max-width:none!important;width:100%!important;padding:24px 32px 20px!important;}
+  .doc-title{font-size:26px!important;letter-spacing:-.025em;}
+  .doc-subtitle{margin-top:3px;}
+  .doc-meta{margin-top:12px!important;gap:8px 18px!important;}
+  .doc-badge{min-width:220px;}
+  .main{max-width:none!important;width:100%!important;margin:0!important;padding:28px 32px 64px!important;}
+
+  /* Overview hierarchy */
+  .ov-section{margin:0 0 24px!important;border-radius:14px!important;box-shadow:none!important;}
+  .ov-hdr{padding:15px 20px 12px!important;}
+  .ov-hdr-title{font-size:11px!important;letter-spacing:1.5px!important;}
+  .ov-card{padding:22px 20px 20px!important;min-height:126px;justify-content:center;}
+  .ov-card-val-lg{font-size:44px!important;letter-spacing:-.04em!important;}
+  .ov-card-val-md{font-size:30px!important;}
+  .ov-cards-5 .ov-card{min-width:0;}
+
+  /* Make the exposure row read as the primary historical evidence strip */
+  .ov-section:nth-of-type(2){border-color:#dfe2e8!important;}
+  .ov-section:nth-of-type(2) .ov-hdr{background:#fbfbfc!important;}
+  .ov-section:nth-of-type(2) .ov-card:nth-child(3),
+  .ov-section:nth-of-type(2) .ov-card:nth-child(4){background:rgba(239,68,68,.035);}
+
+  /* Data controls become secondary to the evidence overview */
+  .g-toolbar,.ctrl-bar{margin-top:28px!important;}
+
+  /* Charts: large evidence-first canvas */
+  .chart-wrap{border-radius:14px!important;overflow:hidden!important;margin-bottom:24px!important;box-shadow:none!important;}
+  .chart-grid{gap:0!important;}
+  .chart-grid.full{grid-template-columns:1fr!important;}
+  .chart-grid.full .chart-box{min-height:390px!important;padding:20px 22px!important;}
+  .chart-grid.full canvas{max-height:320px!important;}
+  .chart-grid:not(.full){grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .chart-box{padding:18px 20px!important;min-width:0;}
+  .chart-head{margin-bottom:14px!important;}
+  .chart-title{font-size:14px!important;}
+  canvas{max-height:260px!important;}
+
+  /* Daily/supporting evidence stays readable but visually secondary */
+  .daily-grid-wrap,.table-outer,.export-wrap{border-radius:14px!important;}
+  .daily-grid{grid-template-columns:repeat(7,minmax(0,1fr))!important;}
+  .table-outer{max-height:560px;overflow:auto!important;}
+
+  /* Room/sensor panels should use the same application canvas */
+  .sensor-panel,.room-map-wrap,.mold-wrap{max-width:none!important;width:100%!important;}
+}
+
+/* Mid-size desktop/tablet */
+@media (min-width: 760px) and (max-width: 1199px){
+  .ov-cards-5{grid-template-columns:repeat(3,1fr)!important;}
+  .ov-cards-5 .ov-card:nth-child(3){border-right:none;}
+  .ov-cards-5 .ov-card:nth-child(n+4){border-top:1px solid var(--border);}
+  .daily-grid{grid-template-columns:repeat(4,1fr)!important;}
+}
+
+/* Mobile remains single-column and touch friendly */
+@media (max-width: 979px){
+  body{padding-left:0;}
+  .main{padding-left:14px!important;padding-right:14px!important;}
+  .ov-section{margin-bottom:16px!important;}
+  .ov-card{min-height:auto;}
+}

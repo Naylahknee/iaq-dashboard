@@ -7,7 +7,7 @@ export default {
     return new HTMLRewriter()
       .on('head', {
         element(element) {
-          element.append('<link rel="stylesheet" href="/layout-overrides.css"><link rel="stylesheet" href="/sensor-evidence-view.css">', { html: true });
+          element.append('<link rel="stylesheet" href="/layout-overrides.css"><link rel="stylesheet" href="/redesign-direct.css"><link rel="stylesheet" href="/sensor-evidence-view.css">', { html: true });
         }
       })
       .on('body', {
