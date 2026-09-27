@@ -85,36 +85,62 @@
   }
 
   /* ── OVERVIEW SECTIONS ── */
-  .overview-section{margin-bottom:0;}
-  .overview-section-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:10px 16px 6px;border-top:var(--rule);}
-  .overview-section-label:first-of-type, .overview-first-label{border-top:none;padding-top:14px;}
 
-  /* Current Conditions — larger emphasis */
-  .current-conditions-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-  .current-conditions-row .stat-card{padding:18px 16px 16px;}
-  .current-conditions-row .stat-val{font-size:32px;}
-  .current-conditions-row .stat-lbl{font-size:11px;letter-spacing:1.5px;}
+  /* Outer wrapper for each section (header + cards together) */
+  .ov-section{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.04);background:var(--surface);}
 
-  /* Long-term exposure — 5 columns */
-  .exposure-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--border-md);border-bottom:none;overflow:hidden;}
+  /* Section header row */
+  .ov-hdr{padding:12px 18px 10px;border-bottom:1px solid var(--border);background:var(--surface);}
+  .ov-hdr-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text);margin-bottom:2px;}
+  .ov-hdr-sub{font-size:12px;color:var(--text-muted);}
 
-  /* Environmental details — 3 columns, less emphasis */
-  .env-details-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-top:1px solid var(--border);border-radius:0 0 12px 12px;overflow:hidden;margin-bottom:24px;}
-  .env-details-row .stat-card{padding:11px 14px 10px;}
-  .env-details-row .stat-val{font-size:17px;}
-  .env-details-row .stat-lbl{font-size:11px;letter-spacing:.9px;color:var(--text-muted);}
-  .env-details-row .stat-sub{font-size:12px;}
+  /* Card grids inside each section */
+  .ov-cards-3{display:grid;grid-template-columns:repeat(3,1fr);}
+  .ov-cards-5{display:grid;grid-template-columns:repeat(5,1fr);}
 
-  /* Section header strip inside the card block */
-  .stats-section-hdr{background:var(--surface2);padding:6px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border-bottom:var(--rule);border-top:var(--rule);grid-column:1/-1;}
-  .stats-section-hdr:first-child{border-top:none;}
+  /* Individual overview card */
+  .ov-card{padding:16px 18px 14px;border-right:1px solid var(--border);position:relative;display:flex;flex-direction:column;gap:0;}
+  .ov-card:last-child{border-right:none;}
 
-  /* Current conditions classification badge */
-  .curr-status-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-top:5px;}
-  .curr-status-safe{background:rgba(16,185,129,0.12);color:var(--g-success);}
-  .curr-status-caution{background:rgba(6,182,212,0.12);color:#0891b2;}
-  .curr-status-danger{background:rgba(251,146,60,0.12);color:#d97706;}
-  .curr-status-critical{background:rgba(239,68,68,0.12);color:var(--g-error);}
+  /* Bottom accent line on cards (like existing stat-card::after) */
+  .ov-card::after{content:'';position:absolute;bottom:0;left:18px;right:18px;height:2px;background:var(--ov-accent,transparent);}
+
+  /* Card icon + label row */
+  .ov-card-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .ov-card-icon{flex-shrink:0;opacity:0.75;}
+  .ov-card-lbl{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-muted);line-height:1.3;}
+
+  /* Current Conditions — large value */
+  .ov-card-val-lg{font-family:var(--font-display);font-size:38px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;}
+  .ov-card-sub{font-size:13px;color:var(--text-muted);margin-top:6px;}
+
+  /* Status badge (CRITICAL pill) */
+  .ov-status-badge{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-left:10px;vertical-align:middle;}
+  .ov-badge-safe{background:rgba(16,185,129,0.12);color:var(--g-success);}
+  .ov-badge-caution{background:rgba(6,182,212,0.12);color:#0891b2;}
+  .ov-badge-danger{background:rgba(251,146,60,0.15);color:#d97706;}
+  .ov-badge-critical{background:rgba(239,68,68,0.12);color:var(--g-error);}
+
+  /* Tinted card backgrounds for current conditions */
+  .ov-card-hum{background:rgba(239,68,68,0.04);}
+  .ov-card-temp{background:rgba(99,102,241,0.04);}
+  .ov-card-dew{background:rgba(99,102,241,0.04);}
+
+  /* Long-term exposure card values */
+  .ov-card-val-md{font-family:var(--font-display);font-size:28px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
+
+  /* Accent colors per card */
+  .ov-acc-red{--ov-accent:var(--g-error);}
+  .ov-acc-amber{--ov-accent:var(--ios-orange);}
+  .ov-acc-slate{--ov-accent:var(--g-indigo);}
+  .ov-acc-neutral{--ov-accent:var(--border);}
+
+  /* View link on peak */
+  .ov-view-link{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;color:var(--g-error);text-decoration:none;margin-top:4px;cursor:pointer;}
+  .ov-view-link:hover{text-decoration:underline;}
+
+  /* Env details — smaller values */
+  .ov-card-val-sm{font-family:var(--font-display);font-size:22px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;}
 
   /* ── LIVE CLOCK BAR ── */
   .clock-bar{background:var(--surface);border-bottom:var(--rule);color:var(--text);padding:7px 48px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;letter-spacing:0.5px;}
@@ -570,10 +596,9 @@
     .stat-card{ padding:12px 10px; }
     .stat-val{ font-size:19px; }
     .stat-lbl{ font-size:9.5px;letter-spacing:.7px; }
-    /* New overview rows — tablet */
-    .current-conditions-row .stat-val{ font-size:26px; }
-    .exposure-row{ grid-template-columns:repeat(3,1fr); }
-    .env-details-row .stat-val{ font-size:15px; }
+    /* Overview sections — tablet */
+    .ov-cards-5{ grid-template-columns:repeat(3,1fr); }
+    .ov-card-val-lg{ font-size:30px; }
     .stat-sub{ font-size:11px; }
 
     /* Charts: single col */
@@ -701,11 +726,12 @@
     .stat-card{ padding:13px 11px 11px; }
     .stat-val{ font-size:22px; }
     .stat-lbl{ font-size:9px;letter-spacing:.5px; }
-    /* New overview rows — mobile */
-    .current-conditions-row{ grid-template-columns:1fr;border-radius:12px 12px 0 0; }
-    .current-conditions-row .stat-val{ font-size:28px; }
-    .exposure-row{ grid-template-columns:repeat(2,1fr); }
-    .env-details-row{ grid-template-columns:1fr; }
+    /* Overview sections — mobile */
+    .ov-cards-3,.ov-cards-5{ grid-template-columns:1fr; }
+    .ov-card{ border-right:none!important;border-bottom:1px solid var(--border); }
+    .ov-card:last-child{ border-bottom:none; }
+    .ov-card-val-lg{ font-size:32px; }
+    .ov-card-val-md{ font-size:24px; }
     .stat-sub{ font-size:11px; }
 
     /* Charts */
@@ -1325,75 +1351,119 @@ body.sidebar-open{padding-left:260px;}
 <!-- MAIN -->
 <div class="main">
 
-  <!-- STAT CARDS — restructured into 3 sections -->
-
-  <!-- SECTION 1: CURRENT CONDITIONS -->
-  <div class="stats-section-hdr overview-first-label" style="background:var(--surface2);padding:7px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;">Current Conditions</div>
-  <div class="current-conditions-row">
-    <div class="stat-card s-red" style="border-right:var(--rule);">
-      <div class="stat-lbl">Humidity</div>
-      <div class="stat-val" id="s-curr-hum">—</div>
-      <div class="stat-sub"><span id="s-curr-hum-status" class="curr-status-badge">—</span></div>
+  <!-- OVERVIEW: CURRENT CONDITIONS -->
+  <div class="ov-section">
+    <div class="ov-hdr">
+      <div class="ov-hdr-title">Current Conditions</div>
+      <div class="ov-hdr-sub" id="ov-curr-subtitle">Latest reading</div>
     </div>
-    <div class="stat-card s-slate" style="border-right:var(--rule);">
-      <div class="stat-lbl">Temperature</div>
-      <div class="stat-val" id="s-curr-temp">—</div>
-      <div class="stat-sub">Latest reading</div>
-    </div>
-    <div class="stat-card s-slate">
-      <div class="stat-lbl">Dew Point</div>
-      <div class="stat-val" id="s-curr-dew">—</div>
-      <div class="stat-sub">Latest reading</div>
-    </div>
-  </div>
-
-  <!-- SECTION 2: LONG-TERM HUMIDITY EXPOSURE -->
-  <div class="stats-section-hdr" style="background:var(--surface2);padding:7px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);border-top:2px solid var(--border-md);border-bottom:none;">Long-Term Humidity Exposure</div>
-  <div class="exposure-row">
-    <div class="stat-card s-amber" style="border-right:var(--rule);">
-      <div class="stat-lbl">Avg Humidity</div>
-      <div class="stat-val" id="s-avg-hum">75.2%</div>
-      <div class="stat-sub" id="s-total-r">522 readings</div>
-    </div>
-    <div class="stat-card s-red stat-clickable" id="peak-card" onclick="drillToPeak()" title="Click to view peak reading in charts" style="border-right:var(--rule);">
-      <div class="stat-lbl">Peak Humidity <span class="card-drill-hint">&#8599; View</span></div>
-      <div class="stat-val" id="s-peak">84%</div>
-      <div class="stat-sub" id="s-peak-when">Mar 21, 12:00 PM</div>
-    </div>
-    <div class="stat-card s-red" style="border-right:var(--rule);">
-      <div class="stat-lbl">Readings ≥70%</div>
-      <div class="stat-val" id="s-over70">450</div>
-      <div class="stat-sub" id="s-over70-pct">86.2% of total</div>
-    </div>
-    <div class="stat-card s-red" style="border-right:var(--rule);">
-      <div class="stat-lbl">Readings ≥80%</div>
-      <div class="stat-val" id="s-over80">—</div>
-      <div class="stat-sub">Mold growth likely</div>
-    </div>
-    <div class="stat-card s-neutral">
-      <div class="stat-lbl">Days Above 60%</div>
-      <div class="stat-val" id="s-days-over">23/23</div>
-      <div class="stat-sub">100% of days</div>
+    <div class="ov-cards-3">
+      <!-- Humidity -->
+      <div class="ov-card ov-acc-red ov-card-hum">
+        <div class="ov-card-head">
+          <svg class="ov-card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--g-error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          <span class="ov-card-lbl">Humidity</span>
+        </div>
+        <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;">
+          <span class="ov-card-val-lg" id="s-curr-hum" style="color:var(--g-error);">—</span>
+          <span id="s-curr-hum-status" class="ov-status-badge ov-badge-critical" style="display:none;"></span>
+        </div>
+      </div>
+      <!-- Temperature -->
+      <div class="ov-card ov-acc-slate ov-card-temp">
+        <div class="ov-card-head">
+          <svg class="ov-card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--g-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+          <span class="ov-card-lbl">Temperature</span>
+        </div>
+        <div class="ov-card-val-lg" id="s-curr-temp" style="color:var(--g-indigo);">—</div>
+      </div>
+      <!-- Dew Point -->
+      <div class="ov-card ov-acc-slate ov-card-dew">
+        <div class="ov-card-head">
+          <svg class="ov-card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--g-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+          <span class="ov-card-lbl">Dew Point</span>
+        </div>
+        <div class="ov-card-val-lg" id="s-curr-dew" style="color:var(--g-indigo);">—</div>
+        <div class="ov-card-sub">Moisture in air</div>
+      </div>
     </div>
   </div>
 
-  <!-- SECTION 3: ENVIRONMENTAL DETAILS -->
-  <div class="stats-section-hdr" style="background:var(--surface2);padding:7px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);border-top:var(--rule);border-bottom:none;">Environmental Details</div>
-  <div class="env-details-row">
-    <div class="stat-card s-slate" style="border-right:var(--rule);">
-      <div class="stat-lbl">Avg Dew Point</div>
-      <div class="stat-val" id="s-dew">—</div>
-      <div class="stat-sub">Moisture in air</div>
+  <!-- OVERVIEW: LONG-TERM HUMIDITY EXPOSURE -->
+  <div class="ov-section">
+    <div class="ov-hdr">
+      <div class="ov-hdr-title">Long-Term Humidity Exposure</div>
+      <div class="ov-hdr-sub" id="ov-exp-subtitle">Historical averages</div>
     </div>
-    <div class="stat-card s-amber" style="border-right:var(--rule);">
-      <div class="stat-lbl">Avg Heat Index</div>
-      <div class="stat-val" id="s-hi">—</div>
-      <div class="stat-sub">Feels-like temp</div>
+    <div class="ov-cards-5">
+      <!-- Avg Humidity -->
+      <div class="ov-card ov-acc-amber">
+        <div class="ov-card-lbl" style="margin-bottom:8px;">Average Humidity</div>
+        <div class="ov-card-val-md" id="s-avg-hum" style="color:var(--ios-orange);">75.2%</div>
+        <div class="ov-card-sub" id="s-total-r">522 readings</div>
+      </div>
+      <!-- Peak Humidity -->
+      <div class="ov-card ov-acc-red stat-clickable" id="peak-card" onclick="drillToPeak()" title="Click to view peak reading in charts">
+        <div class="ov-card-lbl" style="margin-bottom:8px;">Peak Humidity</div>
+        <div class="ov-card-val-md" id="s-peak" style="color:var(--g-error);">84%</div>
+        <div class="ov-card-sub" id="s-peak-when">Mar 21, 12:00 PM</div>
+        <span class="ov-view-link">↗ View</span>
+      </div>
+      <!-- Readings ≥70% -->
+      <div class="ov-card ov-acc-red">
+        <div class="ov-card-lbl" style="margin-bottom:8px;">Readings ≥70%</div>
+        <div class="ov-card-val-md" id="s-over70" style="color:var(--g-error);">450</div>
+        <div class="ov-card-sub" id="s-over70-pct">86.2% of total</div>
+      </div>
+      <!-- Readings ≥80% -->
+      <div class="ov-card ov-acc-red">
+        <div class="ov-card-lbl" style="margin-bottom:8px;">Readings ≥80%</div>
+        <div class="ov-card-val-md" id="s-over80" style="color:var(--g-error);">—</div>
+        <div class="ov-card-sub">Mold growth likely</div>
+      </div>
+      <!-- Days Above 60% -->
+      <div class="ov-card ov-acc-neutral">
+        <div class="ov-card-lbl" style="margin-bottom:8px;">Days Above 60%</div>
+        <div class="ov-card-val-md" id="s-days-over" style="color:var(--text);">23/23</div>
+        <div class="ov-card-sub">100% of days</div>
+      </div>
     </div>
-    <div class="stat-card s-slate">
-      <div class="stat-lbl">Temp Range</div>
-      <div class="stat-val" id="s-temp">66–74°F</div>
-      <div class="stat-sub" id="s-avg-temp">Avg 69.3°F</div>
+  </div>
+
+  <!-- OVERVIEW: ENVIRONMENTAL DETAILS -->
+  <div class="ov-section">
+    <div class="ov-hdr">
+      <div class="ov-hdr-title">Environmental Details</div>
+      <div class="ov-hdr-sub">Additional comfort metrics and temperature range</div>
+    </div>
+    <div class="ov-cards-3">
+      <!-- Avg Dew Point -->
+      <div class="ov-card ov-acc-slate">
+        <div class="ov-card-head">
+          <svg class="ov-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--g-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14M5 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4M5 8v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M9 12h6"/></svg>
+          <span class="ov-card-lbl">Avg Dew Point</span>
+        </div>
+        <div class="ov-card-val-sm" id="s-dew" style="color:var(--g-indigo);">—</div>
+        <div class="ov-card-sub">Moisture in air</div>
+      </div>
+      <!-- Avg Heat Index -->
+      <div class="ov-card ov-acc-amber">
+        <div class="ov-card-head">
+          <svg class="ov-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ios-orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <span class="ov-card-lbl">Avg Heat Index</span>
+        </div>
+        <div class="ov-card-val-sm" id="s-hi" style="color:var(--ios-orange);">—</div>
+        <div class="ov-card-sub">Feels-like temp</div>
+      </div>
+      <!-- Temp Range -->
+      <div class="ov-card ov-acc-slate">
+        <div class="ov-card-head">
+          <svg class="ov-card-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--g-indigo)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+          <span class="ov-card-lbl">Temp Range</span>
+        </div>
+        <div class="ov-card-val-sm" id="s-temp" style="color:var(--g-indigo);">66–74°F</div>
+        <div class="ov-card-sub" id="s-avg-temp">Avg 69.3°F</div>
+      </div>
     </div>
   </div>
 
@@ -2047,16 +2117,21 @@ function updateStatsForView(D){
     const ctel=document.getElementById('s-curr-temp');
     const cdel=document.getElementById('s-curr-dew');
     const csel=document.getElementById('s-curr-hum-status');
-    if(cel) cel.textContent=ch+'%';
+    const csub=document.getElementById('ov-curr-subtitle');
+    if(cel){cel.textContent=ch+'%';cel.style.color=hColIoT(ch);}
     if(ctel) ctel.textContent=ct+'°F';
     if(cdel) cdel.textContent=cd+'°F';
     if(csel){
       const st=hStat(ch);
       csel.textContent=st.label;
-      csel.className='curr-status-badge curr-status-'+st.label.toLowerCase();
-      if(cel) cel.style.color=hColIoT(ch);
+      csel.style.display='inline-block';
+      csel.className='ov-status-badge ov-badge-'+st.label.toLowerCase();
     }
+    if(csub) csub.textContent=`Latest reading from ${latest.date}, ${latest.time}`;
   }
+  // ── Long-term subtitle ──
+  const _esub=document.getElementById('ov-exp-subtitle');
+  if(_esub&&N>0){_esub.textContent=`Based on ${N} readings from ${sortedDates[0]?.slice(0,5)||'--'} – ${sortedDates[sortedDates.length-1]?.slice(0,5)||'--'}`;}
 }
 
 // ═══════════════════ DAILY GRID ═══════════════════
