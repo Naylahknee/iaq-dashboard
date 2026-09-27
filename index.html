@@ -2005,8 +2005,10 @@ function buildComplaintText(){
   const rc=document.getElementById('footer-record-count');if(rc)rc.textContent=DATA.length+' readings evaluated';
 }
 function updateNotice(){
+  const el=document.getElementById('notice-text');
+  if(!el) return;
   const D=DATA,N=D.length,hums=D.map(r=>r.humidity),o60pct=((hums.filter(h=>h>=60).length/N)*100).toFixed(1),peak=Math.max(...hums),peakR=D.find(r=>r.humidity===peak);
-  document.getElementById('notice-text').innerHTML=`<strong>Indoor Air Quality Alert:</strong> EPA &amp; ASHRAE Standard 55 recommend indoor RH between 30–50%. Above 60% promotes mold growth. <strong>${o60pct}% of all recorded readings exceed the 60% safe threshold.</strong> Peak recorded: <strong>${peak}% RH${peakR?` (${peakR.date.slice(0,5)}, ${peakR.time})`:''}</strong>. Sustained levels above 70% indicate conditions where mold growth risk is elevated.`;
+  el.innerHTML=`<strong>Indoor Air Quality Alert:</strong> EPA &amp; ASHRAE Standard 55 recommend indoor RH between 30–50%. Above 60% promotes mold growth. <strong>${o60pct}% of all recorded readings exceed the 60% safe threshold.</strong> Peak recorded: <strong>${peak}% RH${peakR?` (${peakR.date.slice(0,5)}, ${peakR.time})`:''}</strong>. Sustained levels above 70% indicate conditions where mold growth risk is elevated.`;
 }
 
 // ═══════════════════ FULL INIT ═══════════════════
@@ -2749,7 +2751,7 @@ function printReport(){window.print();}
 
 // ═══════════════════ DOC ID ═══════════════════
 function generateDocId(){const D=DATA;if(!D.length)return'IAQ-TP358S-'+new Date().toISOString().slice(0,10).replace(/-/g,'');const dMap={};D.forEach(r=>{dMap[r.date]=1;});const days=Object.keys(dMap).sort(),first=days[0]?.replace(/\//g,'')||'';return'IAQ-TP358S-'+first;}
-function updateDocId(){document.getElementById('doc-id').textContent=generateDocId();buildComplaintText();}
+function updateDocId(){const el=document.getElementById('doc-id');if(el)el.textContent=generateDocId();buildComplaintText();}
 
 // ═══════════════════ UPLOAD SOURCE TOGGLE ═══════════════════
 function setUploadSource(src){
@@ -3350,7 +3352,7 @@ try{const _sd=localStorage.getItem('iaq-saved-data'),_sl=localStorage.getItem('i
 catch(e){initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');}
 // Heatmap renders lazily when user opens the tab — no pre-render needed
 (function(){
-  document.getElementById('doc-url').textContent=window.location.href.length>60?window.location.href.slice(0,60)+'…':window.location.href;
+  const _urlEl=document.getElementById('doc-url');if(_urlEl)_urlEl.textContent=window.location.href.length>60?window.location.href.slice(0,60)+'…':window.location.href;
   const pub=localStorage.getItem('iac-first-published'),now=new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   if(!pub){localStorage.setItem('iac-first-published',now);}
   const pubVal=localStorage.getItem('iac-first-published')||now;
