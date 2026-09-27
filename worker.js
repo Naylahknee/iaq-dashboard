@@ -10,6 +10,11 @@ export default {
           element.append('<link rel="stylesheet" href="/layout-overrides.css">', { html: true });
         }
       })
+      .on('body', {
+        element(element) {
+          element.append('<script src="/visualization-layout.js"></script>', { html: true });
+        }
+      })
       .transform(response);
   }
 };
