@@ -1088,6 +1088,12 @@ body.sidebar-open{padding-left:260px;}
 .sidebar-toggle-btn svg{pointer-events:none;}
 /* Header toggle always visible — hides the duplicate one inside sidebar */
 .sidebar .sidebar-toggle-btn{display:none;}
+/* Sensor submenu items */
+.sidebar-subnav{display:flex;flex-direction:column;gap:1px;padding-left:24px;}
+.sidebar-subnav-item{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:7px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;background:none;border:none;text-align:left;width:100%;transition:background 100ms,color 100ms;}
+.sidebar-subnav-item:hover{background:var(--surface2);color:var(--text);}
+.sidebar-subnav-item.active{background:rgba(99,102,241,0.08);color:var(--g-indigo);font-weight:600;}
+.sidebar-subnav-item svg{flex-shrink:0;opacity:.6;}
 
 /* header inner flex */
 .doc-header-inner{display:flex;align-items:flex-start;}
@@ -1159,6 +1165,24 @@ body.sidebar-open{padding-left:260px;}
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
           Room Map
         </button>
+        <div class="sidebar-subnav">
+          <button class="sidebar-subnav-item" id="subnav-1a" onclick="sidebarSensor('1a')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Sensor 1A · Hallway
+          </button>
+          <button class="sidebar-subnav-item" id="subnav-g1" onclick="sidebarSensor('g1')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Sensor 1 · Master Bedroom
+          </button>
+          <button class="sidebar-subnav-item" id="subnav-g2" onclick="sidebarSensor('g2')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Sensor 2 · Living Room
+          </button>
+          <button class="sidebar-subnav-item" id="subnav-g3" onclick="sidebarSensor('g3')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+            Sensor 3 · Bedroom 2
+          </button>
+        </div>
         <button class="sidebar-nav-item" onclick="sidebarTab('export')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Export
@@ -2951,10 +2975,10 @@ let HM_USE_PHOTO_SNAPSHOT = true;
         <div style="font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;font-size:20px;font-weight:700;color:var(--text);">📊 Sensor Data Visualizations</div>
         <button onclick="window.showApiKeyModal()" style="display:inline-flex;align-items:center;gap:6px;background:rgba(13,138,122,0.1);color:var(--iot-teal);font-size:12px;font-weight:700;padding:6px 16px;border-radius:999px;border:1px solid rgba(13,138,122,0.3);cursor:pointer;">🔑 ${getApiKey()?'API Key ✓':'Set API Key for Photo Reading'}</button>
       </div>
-      ${block1A}
-      ${blockG1}
-      ${blockG2}
-      ${blockG3}
+      <div id="sensor-1a">${block1A}</div>
+      <div id="sensor-g1">${blockG1}</div>
+      <div id="sensor-g2">${blockG2}</div>
+      <div id="sensor-g3">${blockG3}</div>
     `;
 
     // Re-bind Geevon upload inputs after innerHTML update
@@ -3630,6 +3654,20 @@ function sidebarTab(tab){
   // on narrow screens close after tap; on wide keep open
   if(window.innerWidth < 768) closeSidebar();
 }
+function sidebarSensor(key){
+  // Navigate to heatmap tab, then scroll to the sensor block
+  sidebarTab('heatmap');
+  // Mark subnav active
+  document.querySelectorAll('.sidebar-subnav-item').forEach(el=>{
+    el.classList.toggle('active', el.id==='subnav-'+key);
+  });
+  // Scroll after a short delay so the tab panel has rendered
+  setTimeout(()=>{
+    const el=document.getElementById('sensor-'+key);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 120);
+}
+
 // Update sidebar lock icon when owner unlocks
 const _origVerifyPin=verifyPin;
 window.verifyPin=function(){
