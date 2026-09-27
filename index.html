@@ -999,16 +999,20 @@
   }
 
 /* ═══════════════════ SIDEBAR ═══════════════════ */
-.sidebar-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1000;opacity:0;pointer-events:none;transition:opacity 180ms ease;}
-.sidebar-overlay.open{opacity:1;pointer-events:all;}
+/* No overlay — sidebar pushes content right */
+.sidebar-overlay{display:none;}
 
 .sidebar{
   position:fixed;top:0;left:0;height:100%;width:260px;
-  background:var(--surface2,#F5F5F5);
-  z-index:1001;transform:translateX(-100%);transition:transform 220ms cubic-bezier(0.4,0,0.2,1);
+  background:var(--surface2,#F5F5F5);border-right:1px solid var(--border);
+  z-index:200;transform:translateX(-100%);transition:transform 220ms cubic-bezier(0.4,0,0.2,1);
   display:flex;flex-direction:column;overflow:hidden;
 }
 .sidebar.open{transform:translateX(0);}
+
+/* Page shell shifts right when sidebar is open */
+body{transition:padding-left 220ms cubic-bezier(0.4,0,0.2,1);}
+body.sidebar-open{padding-left:260px;}
 
 /* header row — logo + close */
 .sidebar-header{
@@ -3446,9 +3450,8 @@ document.addEventListener('DOMContentLoaded', function(){
 // ═══════════════════ SIDEBAR ═══════════════════
 function openSidebar(){
   document.getElementById('sidebar').classList.add('open');
-  document.getElementById('sidebar-overlay').classList.add('open');
-  document.body.style.overflow='hidden';
-  // sync active tab
+  document.body.classList.add('sidebar-open');
+  // sync active tab highlight
   const active=document.querySelector('.g-tab.active');
   if(active){
     const tab=active.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];
@@ -3459,8 +3462,7 @@ function openSidebar(){
 }
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebar-overlay').classList.remove('open');
-  document.body.style.overflow='';
+  document.body.classList.remove('sidebar-open');
 }
 function sidebarTab(tab){
   // find and click the matching g-tab
@@ -3471,7 +3473,8 @@ function sidebarTab(tab){
   document.querySelectorAll('.sidebar-nav-item').forEach(el=>{
     el.classList.toggle('active', el.getAttribute('onclick')?.includes("'"+tab+"'"));
   });
-  closeSidebar();
+  // on narrow screens close after tap; on wide keep open
+  if(window.innerWidth < 768) closeSidebar();
 }
 // Update sidebar lock icon when owner unlocks
 const _origVerifyPin=verifyPin;
