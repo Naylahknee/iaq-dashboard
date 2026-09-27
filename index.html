@@ -894,7 +894,7 @@
   /* Right-side controls */
   .g-toolbar-controls{
     display:flex;align-items:center;gap:10px;
-    padding:0 16px;border-left:1px solid var(--border);
+    padding:0 16px;
     flex-shrink:0;
   }
 
@@ -1110,11 +1110,17 @@ body.sidebar-open{padding-left:260px;}
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar" role="navigation" aria-label="Navigation">
   <div class="sidebar-header">
+    <button class="sidebar-toggle-btn" onclick="closeSidebar()" aria-label="Close sidebar" style="margin-right:8px;margin-left:-4px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M9 3v18"/>
+      </svg>
+    </button>
     <div class="sidebar-logo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 8v4l3 3"/><circle cx="18.5" cy="5.5" r="2.5"/></svg>
       <span class="sidebar-logo-text">IAQ Monitor</span>
     </div>
-    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close sidebar">
+    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Close sidebar" style="display:none;">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
     </button>
   </div>
@@ -1214,7 +1220,7 @@ body.sidebar-open{padding-left:260px;}
         <path d="M9 3v18"/>
       </svg>
     </button>
-    <div>
+    <div style="flex:1;">
       <div class="doc-label">Indoor Air Quality Monitoring Report</div>
       <h1 class="doc-title">Indoor Air Quality Report</h1>
       <p class="doc-subtitle">Relative Humidity, Temperature &amp; Derived Comfort Metrics</p>
@@ -1308,19 +1314,7 @@ body.sidebar-open{padding-left:260px;}
   <!-- UNIFIED GENESIS TOOLBAR -->
   <div class="g-toolbar" id="ctrl-bar">
 
-    <!-- LEFT: tab navigation -->
-    <nav class="g-tabs" role="tablist">
-      <button class="g-tab active" role="tab" onclick="switchTab('overview',this)">Overview</button>
-      <button class="g-tab" role="tab" onclick="switchTab('derived',this)">Derived Metrics</button>
-      <button class="g-tab" role="tab" onclick="switchTab('daily',this)">Daily Summary</button>
-      <button class="g-tab" role="tab" onclick="switchTab('table',this)">Data Log</button>
-      <button class="g-tab" role="tab" onclick="switchTab('rawdata',this)">Raw Data</button>
-      <button class="g-tab" role="tab" onclick="switchTab('mold',this)">Mold Events</button>
-      <button class="g-tab" role="tab" onclick="switchTab('heatmap',this)">Room Map</button>
-      <button class="g-tab" role="tab" onclick="switchTab('export',this)">Export</button>
-    </nav>
-
-    <!-- RIGHT: compact controls -->
+    <!-- Controls -->
     <div class="g-toolbar-controls">
       <!-- Range dropdown -->
       <div class="g-select-wrap">
