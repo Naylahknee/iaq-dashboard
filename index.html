@@ -2108,8 +2108,7 @@ function initDashboard(rawData,filename){
     if(typeof setHeatMapPhotoSnapshot==='function') setHeatMapPhotoSnapshot('live');
   }
   if(typeof renderHeatMap==='function') setTimeout(renderHeatMap, 50);
-  // Show IAQ alert on load (after a short delay for charts to render)
-  setTimeout(showIaqAlert, 600);
+  // IAQ alert available via the alert button — not auto-shown on load
 }
 
 // ═══════════════════ TABS ═══════════════════
@@ -3459,10 +3458,12 @@ function openSidebar(){
       el.classList.toggle('active', el.getAttribute('onclick')?.includes("'"+tab+"'"));
     });
   }
+  setTimeout(()=>{if(typeof Chart!=='undefined')Object.values(Chart.instances||{}).forEach(c=>c.resize());},230);
 }
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
   document.body.classList.remove('sidebar-open');
+  setTimeout(()=>{if(typeof Chart!=='undefined')Object.values(Chart.instances||{}).forEach(c=>c.resize());},230);
 }
 function sidebarTab(tab){
   // find and click the matching g-tab
