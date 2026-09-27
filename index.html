@@ -2151,16 +2151,19 @@ function initDashboard(rawData,filename){
   document.getElementById('meta-freq-label').textContent='Hourly';
   buildChartsForView(DATA,'hour');
   updateStatsForView(DATA);
-  buildDailyGrid();resetFilters();buildComplaintText();updateNotice();
+  resetFilters();buildComplaintText();updateNotice();
   if(filename)document.getElementById('upload-loaded-name').textContent=filename;
   buildMoldEventHumidity();
-  // Auto-switch heatmap to live/CSV mode and refresh so Sensor 1A shows TempPro data
+  // Auto-switch heatmap snapshot selector to live mode (don't render yet — defer to tab visit)
   const hmSel=document.getElementById('hm-photo-snapshot-select');
-  if(hmSel){
-    hmSel.value='live';
-    if(typeof setHeatMapPhotoSnapshot==='function') setHeatMapPhotoSnapshot('live');
-  }
-  if(typeof renderHeatMap==='function') setTimeout(renderHeatMap, 50);
+  if(hmSel) hmSel.value='live';
+  // Mark lazy panels as stale so they rebuild next time they're opened
+  const rawBody=document.getElementById('raw-table-body');
+  if(rawBody){rawBody.innerHTML='';rawBody.dataset.built='false';}
+  // If daily tab is currently active, rebuild it now; otherwise mark stale
+  const dailyActive=document.getElementById('tab-daily')?.classList.contains('active');
+  if(dailyActive){buildDailyGrid();}else{window._dailyGridStale=true;}
+  window._heatmapStale=true;
   // IAQ alert available via the alert button — not auto-shown on load
 }
 
@@ -2170,8 +2173,16 @@ function switchTab(name,btn){
   document.querySelectorAll('.g-tab,.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   if(btn)btn.classList.add('active');
-  if(name==='rawdata')buildRawTable();
-  if(name==='heatmap')renderHeatMap();
+  if(name==='rawdata') buildRawTable();
+  if(name==='daily' && window._dailyGridStale){ buildDailyGrid(); window._dailyGridStale=false; }
+  if(name==='heatmap'){
+    if(window._heatmapStale && typeof setHeatMapPhotoSnapshot==='function'){
+      setHeatMapPhotoSnapshot('live');
+      window._heatmapStale=false;
+    } else if(typeof renderHeatMap==='function'){
+      renderHeatMap();
+    }
+  }
 }
 
 // ═══════════════════ SUPPLEMENTAL PHOTO OBSERVATIONS ═══════════════════
@@ -3025,7 +3036,8 @@ let HM_USE_PHOTO_SNAPSHOT = true;
     renderHeatMap();
   };
 
-  window.addEventListener('resize',()=>{ if(typeof renderHeatMap==='function')renderHeatMap(); });
+  // Debounce resize so it doesn't freeze with large datasets
+  let _hmResizeTimer; window.addEventListener('resize',()=>{ clearTimeout(_hmResizeTimer); _hmResizeTimer=setTimeout(()=>{ const tp=document.getElementById('tab-heatmap'); if(tp&&tp.classList.contains('active')&&typeof renderHeatMap==='function')renderHeatMap(); },300); });
 })();
 
 // ═══════════════════ FREQUENCY ═══════════════════
@@ -3704,8 +3716,7 @@ function buildMoldEventHumidity(){
 try{const _sd=localStorage.getItem('iaq-saved-data'),_sl=localStorage.getItem('iaq-saved-label');
   if(_sd){initDashboard(JSON.parse(_sd),_sl||'Saved Data');}else{initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');}}
 catch(e){initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');}
-// Pre-render heat map so it's ready the moment user clicks the tab
-setTimeout(function(){ if(typeof renderHeatMap==='function')renderHeatMap(); },200);
+// Heatmap renders lazily when user opens the tab — no pre-render needed
 (function(){
   document.getElementById('doc-url').textContent=window.location.href.length>60?window.location.href.slice(0,60)+'…':window.location.href;
   const pub=localStorage.getItem('iac-first-published'),now=new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
