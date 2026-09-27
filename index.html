@@ -1257,6 +1257,7 @@ body.sidebar-open{padding-left:260px;}
         <span class="meta-item"><strong>View:</strong> <span id="meta-freq-label">Hourly</span></span>
         <span class="meta-item"><strong>Total Readings:</strong> <span id="meta-total">—</span></span>
         <span class="meta-item"><strong>Last Updated:</strong> <span id="doc-updated">—</span></span>
+        <span class="meta-item"><strong>First Published:</strong> <span id="doc-published-hdr">—</span></span>
       </div>
 
     </div>
@@ -1297,7 +1298,6 @@ body.sidebar-open{padding-left:260px;}
     <div class="docid-inner">
       <span class="docid-item"><strong>Document ID:</strong> <span class="docid-code" id="doc-id">IAQ-TP358S-20260311</span></span>
       <span class="docid-item"><strong>Report URL:</strong> <span id="doc-url" style="font-family:monospace;font-size:12px;color:var(--slate);">—</span></span>
-      <span class="docid-item"><strong>First Published:</strong> <span id="doc-published">—</span></span>
       <span class="docid-item"><strong>Data Integrity:</strong> <span style="color:var(--safe);font-weight:600;">&#10003; Unmodified sensor export</span></span>
     </div>
   </div>
@@ -3371,7 +3371,8 @@ catch(e){initDashboard(SEED,'ThermoProSensor_export_TP358S_04072026.csv');}
   document.getElementById('doc-url').textContent=window.location.href.length>60?window.location.href.slice(0,60)+'…':window.location.href;
   const pub=localStorage.getItem('iac-first-published'),now=new Date().toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
   if(!pub){localStorage.setItem('iac-first-published',now);}
-  document.getElementById('doc-published').textContent=localStorage.getItem('iac-first-published')||now;
+  const pubVal=localStorage.getItem('iac-first-published')||now;
+  ['doc-published','doc-published-hdr'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=pubVal;});
   document.getElementById('doc-updated').textContent=now;
 })();
 </script>
