@@ -1,98 +1,77 @@
-/* IAQ dashboard presentation shell — layout only. Existing data and calculations remain untouched. */
+/* IAQ dashboard presentation shell. Existing data and calculations remain untouched. */
 @media (min-width: 901px) {
   :root { --iaq-sidebar: 260px; }
-
   html, body { width:100%; max-width:none !important; }
-  body {
-    padding-left:var(--iaq-sidebar) !important;
-    background:var(--bg) !important;
-    overflow-x:hidden;
-  }
+  body { padding-left:var(--iaq-sidebar) !important; background:var(--bg) !important; overflow-x:hidden; }
   body.sidebar-open { padding-left:var(--iaq-sidebar) !important; }
-
-  .sidebar {
-    width:var(--iaq-sidebar) !important;
-    transform:translateX(0) !important;
-    background:var(--surface) !important;
-    border-right:1px solid var(--border) !important;
-    box-shadow:none !important;
-  }
+  .sidebar { width:var(--iaq-sidebar) !important; transform:translateX(0) !important; background:var(--surface) !important; border-right:1px solid var(--border) !important; box-shadow:none !important; }
   .sidebar-header { min-height:78px; padding:20px 20px 16px !important; }
   .sidebar-logo-text { font-size:15px !important; }
   .sidebar-body { padding:8px 14px 18px !important; }
   .sidebar-group { margin-bottom:8px !important; }
   .sidebar-group-label { padding:12px 10px 5px !important; font-size:10px !important; letter-spacing:.11em !important; }
   .sidebar-nav-item { padding:8px 10px !important; border-radius:7px !important; }
-  .sidebar .sidebar-toggle-btn,
-  .sidebar-close,
-  .doc-header .sidebar-toggle-btn { display:none !important; }
-
-  /* The old centered report was the reason the live page looked like a narrow document
-     floating inside a huge browser window. The shell now uses the entire canvas. */
+  .sidebar .sidebar-toggle-btn,.sidebar-close,.doc-header .sidebar-toggle-btn { display:none !important; }
   .clock-bar { display:none !important; }
-  .doc-header {
-    width:100% !important;
-    padding:30px 42px 24px !important;
-    background:var(--surface) !important;
-  }
-  .doc-header-inner {
-    width:100% !important;
-    max-width:none !important;
-    margin:0 !important;
-    gap:32px !important;
-  }
+  .doc-header { width:100% !important; padding:30px 42px 24px !important; background:var(--surface) !important; }
+  .doc-header-inner { width:100% !important; max-width:none !important; margin:0 !important; gap:32px !important; }
   .doc-header-inner > div:nth-child(2){min-width:0;}
   .doc-title { font-size:30px !important; }
   .doc-subtitle { margin-top:4px !important; }
   .doc-meta { margin-top:12px !important; gap:16px 22px !important; }
   .doc-badge { min-width:200px !important; }
-
-  .main {
-    width:100% !important;
-    max-width:none !important;
-    margin:0 !important;
-    padding:30px 42px 72px !important;
-  }
-
-  /* Overview hierarchy */
+  .main { width:100% !important; max-width:none !important; margin:0 !important; padding:30px 42px 72px !important; }
   .ov-section { width:100% !important; margin-bottom:18px !important; }
   .ov-hdr { padding:14px 20px 11px !important; }
   .ov-card { min-height:118px; justify-content:center; padding:18px 20px 16px !important; }
   .ov-card-val-lg { font-size:40px !important; }
   .ov-card-val-md { font-size:29px !important; }
-
-  /* Filters/charts/tables should align to the same full-width content rail. */
-  .g-toolbar,
-  .threshold-strip,
-  .chart-card,
-  .table-wrap,
-  .daily-grid,
-  .raw-wrap,
-  .room-map-wrap,
-  .mold-wrap { max-width:none !important; width:100% !important; }
+  .g-toolbar,.threshold-strip,.table-wrap,.daily-grid,.raw-wrap,.room-map-wrap,.mold-wrap { max-width:none !important; width:100% !important; }
   .g-toolbar { margin-top:0 !important; }
-  .chart-grid { gap:20px !important; width:100% !important; }
-
-  /* Keep charts readable on wide desktop displays instead of stretching one chart absurdly. */
-  .chart-grid.two-col { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; }
 }
 
-@media (min-width: 1500px) {
-  .doc-header { padding-left:52px !important; padding-right:52px !important; }
-  .main { padding-left:52px !important; padding-right:52px !important; }
+/* Evidence-first chart hierarchy */
+.evidence-section{margin:26px 0 34px;width:100%;}
+.evidence-section-head{display:flex;align-items:flex-end;justify-content:space-between;margin:0 0 12px;padding:0 2px;}
+.evidence-kicker{font-family:var(--font-display);font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--text);}
+.evidence-sub{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
+.evidence-hero-chart,.evidence-wide-chart,.evidence-two-col{width:100%;}
+.evidence-hero-chart .chart-box{min-height:440px !important;border-radius:10px !important;}
+.evidence-hero-chart canvas{min-height:360px !important;}
+.evidence-two-col{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:18px;}
+.evidence-two-col .chart-box{min-height:330px !important;border-radius:10px !important;}
+.evidence-two-col canvas{min-height:250px !important;}
+.evidence-wide-chart .chart-box{min-height:360px !important;border-radius:10px !important;}
+.evidence-wide-chart canvas{min-height:280px !important;}
+.evidence-supporting .chart-box{min-height:310px !important;}
+.chart-box{background:var(--surface) !important;border:1px solid var(--border) !important;box-shadow:0 1px 2px rgba(0,0,0,.025) !important;}
+.chart-head{padding:16px 18px 12px !important;border-bottom:1px solid var(--border) !important;}
+.chart-title{font-size:14px !important;font-weight:650 !important;letter-spacing:-.01em !important;}
+.chart-note{font-size:11.5px !important;color:var(--text-muted) !important;}
+
+/* Summary numbers should read as evidence, not equal-weight widgets. */
+.ov-cards-5 .ov-card:nth-child(3),.ov-cards-5 .ov-card:nth-child(4){background:color-mix(in srgb,var(--g-error) 4%,var(--surface)) !important;}
+.ov-cards-5 .ov-card:nth-child(3) .ov-card-val-md,.ov-cards-5 .ov-card:nth-child(4) .ov-card-val-md{font-size:32px !important;}
+.threshold-strip{margin-bottom:14px !important;}
+
+@media (min-width:1500px){
+  .doc-header{padding-left:52px !important;padding-right:52px !important;}
+  .main{padding-left:52px !important;padding-right:52px !important;}
+  .evidence-hero-chart .chart-box{min-height:470px !important;}
 }
 
-@media (max-width: 900px) {
-  body, body.sidebar-open { padding-left:0 !important; }
-  .sidebar {
-    width:min(86vw,300px) !important;
-    transform:translateX(-100%) !important;
-    box-shadow:0 18px 48px rgba(0,0,0,.18) !important;
-  }
-  .sidebar.open { transform:translateX(0) !important; }
-  .sidebar-overlay { display:block; opacity:0; pointer-events:none; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:190; transition:opacity .2s ease; }
-  body.sidebar-open .sidebar-overlay { opacity:1; pointer-events:auto; }
-  .doc-header { padding-top:18px !important; }
-  .doc-header-inner { width:100% !important; }
-  .main { width:100% !important; }
+@media (max-width:1100px){
+  .evidence-two-col{grid-template-columns:1fr;}
+}
+
+@media (max-width:900px){
+  body,body.sidebar-open{padding-left:0 !important;}
+  .sidebar{width:min(86vw,300px) !important;transform:translateX(-100%) !important;box-shadow:0 18px 48px rgba(0,0,0,.18) !important;}
+  .sidebar.open{transform:translateX(0) !important;}
+  .sidebar-overlay{display:block;opacity:0;pointer-events:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:190;transition:opacity .2s ease;}
+  body.sidebar-open .sidebar-overlay{opacity:1;pointer-events:auto;}
+  .doc-header{padding-top:18px !important;}
+  .doc-header-inner,.main{width:100% !important;}
+  .evidence-hero-chart .chart-box,.evidence-wide-chart .chart-box,.evidence-two-col .chart-box{min-height:300px !important;}
+  .evidence-hero-chart canvas,.evidence-wide-chart canvas,.evidence-two-col canvas{min-height:220px !important;}
 }
