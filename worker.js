@@ -7,12 +7,12 @@ export default {
     return new HTMLRewriter()
       .on('head', {
         element(element) {
-          element.append('<link rel="stylesheet" href="/layout-overrides.css">', { html: true });
+          element.append('<link rel="stylesheet" href="/layout-overrides.css"><link rel="stylesheet" href="/sensor-evidence-view.css">', { html: true });
         }
       })
       .on('body', {
         element(element) {
-          element.append('<script src="/visualization-layout.js"></script>', { html: true });
+          element.append('<script src="/visualization-layout.js"></script><script src="/sensor-evidence-view.js"></script>', { html: true });
         }
       })
       .transform(response);
