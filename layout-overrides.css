@@ -1,50 +1,98 @@
 /* IAQ dashboard presentation shell — layout only. Existing data and calculations remain untouched. */
 @media (min-width: 901px) {
-  .sidebar {
-    width: 248px !important;
-    transform: translateX(0) !important;
-    background: var(--surface) !important;
-    border-right: 1px solid var(--border) !important;
-    box-shadow: none !important;
-  }
+  :root { --iaq-sidebar: 260px; }
+
+  html, body { width:100%; max-width:none !important; }
   body {
-    padding-left: 248px !important;
-    background: var(--bg) !important;
+    padding-left:var(--iaq-sidebar) !important;
+    background:var(--bg) !important;
+    overflow-x:hidden;
   }
-  body.sidebar-open { padding-left: 248px !important; }
-  .sidebar-header { min-height: 72px; padding: 18px 18px 14px !important; }
-  .sidebar-logo-text { font-size: 15px !important; }
-  .sidebar-body { padding: 8px 12px 16px !important; }
-  .sidebar-group { margin-bottom: 8px !important; }
-  .sidebar-group-label { padding: 12px 10px 5px !important; font-size: 10px !important; letter-spacing: .11em !important; }
-  .sidebar-nav-item { padding: 8px 10px !important; border-radius: 7px !important; }
+  body.sidebar-open { padding-left:var(--iaq-sidebar) !important; }
+
+  .sidebar {
+    width:var(--iaq-sidebar) !important;
+    transform:translateX(0) !important;
+    background:var(--surface) !important;
+    border-right:1px solid var(--border) !important;
+    box-shadow:none !important;
+  }
+  .sidebar-header { min-height:78px; padding:20px 20px 16px !important; }
+  .sidebar-logo-text { font-size:15px !important; }
+  .sidebar-body { padding:8px 14px 18px !important; }
+  .sidebar-group { margin-bottom:8px !important; }
+  .sidebar-group-label { padding:12px 10px 5px !important; font-size:10px !important; letter-spacing:.11em !important; }
+  .sidebar-nav-item { padding:8px 10px !important; border-radius:7px !important; }
   .sidebar .sidebar-toggle-btn,
-  .sidebar-close { display: none !important; }
-  .doc-header .sidebar-toggle-btn { display: none !important; }
+  .sidebar-close,
+  .doc-header .sidebar-toggle-btn { display:none !important; }
 
-  .clock-bar { display: none !important; }
-  .doc-header { padding: 28px 36px 22px !important; }
-  .doc-header-inner { max-width: 1440px !important; margin: 0 auto !important; gap: 24px !important; }
-  .doc-title { font-size: 30px !important; }
-  .doc-subtitle { margin-top: 4px !important; }
-  .doc-meta { margin-top: 12px !important; }
-  .doc-badge { min-width: 190px !important; }
+  /* The old centered report was the reason the live page looked like a narrow document
+     floating inside a huge browser window. The shell now uses the entire canvas. */
+  .clock-bar { display:none !important; }
+  .doc-header {
+    width:100% !important;
+    padding:30px 42px 24px !important;
+    background:var(--surface) !important;
+  }
+  .doc-header-inner {
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    gap:32px !important;
+  }
+  .doc-header-inner > div:nth-child(2){min-width:0;}
+  .doc-title { font-size:30px !important; }
+  .doc-subtitle { margin-top:4px !important; }
+  .doc-meta { margin-top:12px !important; gap:16px 22px !important; }
+  .doc-badge { min-width:200px !important; }
 
-  .main { max-width: 1440px !important; padding: 28px 36px 64px !important; margin: 0 auto !important; }
-  .g-toolbar { margin-top: 0 !important; }
-  .ov-section { margin-bottom: 18px !important; }
-  .ov-hdr { padding: 14px 18px 11px !important; }
-  .ov-card { min-height: 126px; justify-content: center; }
+  .main {
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:30px 42px 72px !important;
+  }
 
-  /* Give the evidence area the roomy two-column rhythm used in the mockup. */
-  .chart-grid { gap: 18px !important; }
+  /* Overview hierarchy */
+  .ov-section { width:100% !important; margin-bottom:18px !important; }
+  .ov-hdr { padding:14px 20px 11px !important; }
+  .ov-card { min-height:118px; justify-content:center; padding:18px 20px 16px !important; }
+  .ov-card-val-lg { font-size:40px !important; }
+  .ov-card-val-md { font-size:29px !important; }
+
+  /* Filters/charts/tables should align to the same full-width content rail. */
+  .g-toolbar,
+  .threshold-strip,
+  .chart-card,
+  .table-wrap,
+  .daily-grid,
+  .raw-wrap,
+  .room-map-wrap,
+  .mold-wrap { max-width:none !important; width:100% !important; }
+  .g-toolbar { margin-top:0 !important; }
+  .chart-grid { gap:20px !important; width:100% !important; }
+
+  /* Keep charts readable on wide desktop displays instead of stretching one chart absurdly. */
+  .chart-grid.two-col { grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important; }
+}
+
+@media (min-width: 1500px) {
+  .doc-header { padding-left:52px !important; padding-right:52px !important; }
+  .main { padding-left:52px !important; padding-right:52px !important; }
 }
 
 @media (max-width: 900px) {
-  body, body.sidebar-open { padding-left: 0 !important; }
-  .sidebar { width: min(86vw, 300px) !important; box-shadow: 0 18px 48px rgba(0,0,0,.18) !important; }
-  .sidebar-overlay { display: block; opacity: 0; pointer-events: none; position: fixed; inset: 0; background: rgba(0,0,0,.32); z-index: 190; transition: opacity .2s ease; }
-  .sidebar.open + .sidebar-overlay,
-  body.sidebar-open .sidebar-overlay { opacity: 1; pointer-events: auto; }
-  .doc-header { padding-top: 18px !important; }
+  body, body.sidebar-open { padding-left:0 !important; }
+  .sidebar {
+    width:min(86vw,300px) !important;
+    transform:translateX(-100%) !important;
+    box-shadow:0 18px 48px rgba(0,0,0,.18) !important;
+  }
+  .sidebar.open { transform:translateX(0) !important; }
+  .sidebar-overlay { display:block; opacity:0; pointer-events:none; position:fixed; inset:0; background:rgba(0,0,0,.32); z-index:190; transition:opacity .2s ease; }
+  body.sidebar-open .sidebar-overlay { opacity:1; pointer-events:auto; }
+  .doc-header { padding-top:18px !important; }
+  .doc-header-inner { width:100% !important; }
+  .main { width:100% !important; }
 }
