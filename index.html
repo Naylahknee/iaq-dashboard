@@ -84,6 +84,38 @@
     min-height:100vh;
   }
 
+  /* ── OVERVIEW SECTIONS ── */
+  .overview-section{margin-bottom:0;}
+  .overview-section-label{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);padding:10px 16px 6px;border-top:var(--rule);}
+  .overview-section-label:first-of-type, .overview-first-label{border-top:none;padding-top:14px;}
+
+  /* Current Conditions — larger emphasis */
+  .current-conditions-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .current-conditions-row .stat-card{padding:18px 16px 16px;}
+  .current-conditions-row .stat-val{font-size:32px;}
+  .current-conditions-row .stat-lbl{font-size:11px;letter-spacing:1.5px;}
+
+  /* Long-term exposure — 5 columns */
+  .exposure-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--border-md);border-bottom:none;overflow:hidden;}
+
+  /* Environmental details — 3 columns, less emphasis */
+  .env-details-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0;background:var(--surface);border:1px solid var(--border);border-top:1px solid var(--border);border-radius:0 0 12px 12px;overflow:hidden;margin-bottom:24px;}
+  .env-details-row .stat-card{padding:11px 14px 10px;}
+  .env-details-row .stat-val{font-size:17px;}
+  .env-details-row .stat-lbl{font-size:11px;letter-spacing:.9px;color:var(--text-muted);}
+  .env-details-row .stat-sub{font-size:12px;}
+
+  /* Section header strip inside the card block */
+  .stats-section-hdr{background:var(--surface2);padding:6px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border-bottom:var(--rule);border-top:var(--rule);grid-column:1/-1;}
+  .stats-section-hdr:first-child{border-top:none;}
+
+  /* Current conditions classification badge */
+  .curr-status-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:4px;margin-top:5px;}
+  .curr-status-safe{background:rgba(16,185,129,0.12);color:var(--g-success);}
+  .curr-status-caution{background:rgba(6,182,212,0.12);color:#0891b2;}
+  .curr-status-danger{background:rgba(251,146,60,0.12);color:#d97706;}
+  .curr-status-critical{background:rgba(239,68,68,0.12);color:var(--g-error);}
+
   /* ── LIVE CLOCK BAR ── */
   .clock-bar{background:var(--surface);border-bottom:var(--rule);color:var(--text);padding:7px 48px;display:flex;align-items:center;justify-content:space-between;font-size:11.5px;letter-spacing:0.5px;}
   .clock-bar-inner{max-width:1200px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;}
@@ -538,6 +570,10 @@
     .stat-card{ padding:12px 10px; }
     .stat-val{ font-size:19px; }
     .stat-lbl{ font-size:9.5px;letter-spacing:.7px; }
+    /* New overview rows — tablet */
+    .current-conditions-row .stat-val{ font-size:26px; }
+    .exposure-row{ grid-template-columns:repeat(3,1fr); }
+    .env-details-row .stat-val{ font-size:15px; }
     .stat-sub{ font-size:11px; }
 
     /* Charts: single col */
@@ -665,6 +701,11 @@
     .stat-card{ padding:13px 11px 11px; }
     .stat-val{ font-size:22px; }
     .stat-lbl{ font-size:9px;letter-spacing:.5px; }
+    /* New overview rows — mobile */
+    .current-conditions-row{ grid-template-columns:1fr;border-radius:12px 12px 0 0; }
+    .current-conditions-row .stat-val{ font-size:28px; }
+    .exposure-row{ grid-template-columns:repeat(2,1fr); }
+    .env-details-row{ grid-template-columns:1fr; }
     .stat-sub{ font-size:11px; }
 
     /* Charts */
@@ -1284,20 +1325,76 @@ body.sidebar-open{padding-left:260px;}
 <!-- MAIN -->
 <div class="main">
 
-  <!-- STAT CARDS -->
-  <div class="stats-row">
-    <div class="stat-card s-red stat-clickable" id="peak-card" onclick="drillToPeak()" title="Click to view peak reading in charts">
+  <!-- STAT CARDS — restructured into 3 sections -->
+
+  <!-- SECTION 1: CURRENT CONDITIONS -->
+  <div class="stats-section-hdr overview-first-label" style="background:var(--surface2);padding:7px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;">Current Conditions</div>
+  <div class="current-conditions-row">
+    <div class="stat-card s-red" style="border-right:var(--rule);">
+      <div class="stat-lbl">Humidity</div>
+      <div class="stat-val" id="s-curr-hum">—</div>
+      <div class="stat-sub"><span id="s-curr-hum-status" class="curr-status-badge">—</span></div>
+    </div>
+    <div class="stat-card s-slate" style="border-right:var(--rule);">
+      <div class="stat-lbl">Temperature</div>
+      <div class="stat-val" id="s-curr-temp">—</div>
+      <div class="stat-sub">Latest reading</div>
+    </div>
+    <div class="stat-card s-slate">
+      <div class="stat-lbl">Dew Point</div>
+      <div class="stat-val" id="s-curr-dew">—</div>
+      <div class="stat-sub">Latest reading</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: LONG-TERM HUMIDITY EXPOSURE -->
+  <div class="stats-section-hdr" style="background:var(--surface2);padding:7px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);border-top:2px solid var(--border-md);border-bottom:none;">Long-Term Humidity Exposure</div>
+  <div class="exposure-row">
+    <div class="stat-card s-amber" style="border-right:var(--rule);">
+      <div class="stat-lbl">Avg Humidity</div>
+      <div class="stat-val" id="s-avg-hum">75.2%</div>
+      <div class="stat-sub" id="s-total-r">522 readings</div>
+    </div>
+    <div class="stat-card s-red stat-clickable" id="peak-card" onclick="drillToPeak()" title="Click to view peak reading in charts" style="border-right:var(--rule);">
       <div class="stat-lbl">Peak Humidity <span class="card-drill-hint">&#8599; View</span></div>
       <div class="stat-val" id="s-peak">84%</div>
       <div class="stat-sub" id="s-peak-when">Mar 21, 12:00 PM</div>
     </div>
-    <div class="stat-card s-amber"><div class="stat-lbl">Avg Humidity</div><div class="stat-val" id="s-avg-hum">75.2%</div><div class="stat-sub" id="s-total-r">522 readings</div></div>
-    <div class="stat-card s-red"><div class="stat-lbl">Readings ≥70%</div><div class="stat-val" id="s-over70">450</div><div class="stat-sub" id="s-over70-pct">86.2% of total</div></div>
-    <div class="stat-card s-red"><div class="stat-lbl">Readings ≥80%</div><div class="stat-val" id="s-over80">—</div><div class="stat-sub">Mold growth likely</div></div>
-    <div class="stat-card s-slate"><div class="stat-lbl">Avg Dew Point</div><div class="stat-val" id="s-dew">—</div><div class="stat-sub">Moisture in air</div></div>
-    <div class="stat-card s-amber"><div class="stat-lbl">Avg Heat Index</div><div class="stat-val" id="s-hi">—</div><div class="stat-sub">Feels-like temp</div></div>
-    <div class="stat-card s-slate"><div class="stat-lbl">Temp Range</div><div class="stat-val" id="s-temp">66–74°F</div><div class="stat-sub" id="s-avg-temp">Avg 69.3°F</div></div>
-    <div class="stat-card s-neutral"><div class="stat-lbl">Days Above 60%</div><div class="stat-val" id="s-days-over">23/23</div><div class="stat-sub">100% of days</div></div>
+    <div class="stat-card s-red" style="border-right:var(--rule);">
+      <div class="stat-lbl">Readings ≥70%</div>
+      <div class="stat-val" id="s-over70">450</div>
+      <div class="stat-sub" id="s-over70-pct">86.2% of total</div>
+    </div>
+    <div class="stat-card s-red" style="border-right:var(--rule);">
+      <div class="stat-lbl">Readings ≥80%</div>
+      <div class="stat-val" id="s-over80">—</div>
+      <div class="stat-sub">Mold growth likely</div>
+    </div>
+    <div class="stat-card s-neutral">
+      <div class="stat-lbl">Days Above 60%</div>
+      <div class="stat-val" id="s-days-over">23/23</div>
+      <div class="stat-sub">100% of days</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: ENVIRONMENTAL DETAILS -->
+  <div class="stats-section-hdr" style="background:var(--surface2);padding:7px 16px;font-size:9.5px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:1px solid var(--border);border-top:var(--rule);border-bottom:none;">Environmental Details</div>
+  <div class="env-details-row">
+    <div class="stat-card s-slate" style="border-right:var(--rule);">
+      <div class="stat-lbl">Avg Dew Point</div>
+      <div class="stat-val" id="s-dew">—</div>
+      <div class="stat-sub">Moisture in air</div>
+    </div>
+    <div class="stat-card s-amber" style="border-right:var(--rule);">
+      <div class="stat-lbl">Avg Heat Index</div>
+      <div class="stat-val" id="s-hi">—</div>
+      <div class="stat-sub">Feels-like temp</div>
+    </div>
+    <div class="stat-card s-slate">
+      <div class="stat-lbl">Temp Range</div>
+      <div class="stat-val" id="s-temp">66–74°F</div>
+      <div class="stat-sub" id="s-avg-temp">Avg 69.3°F</div>
+    </div>
   </div>
 
   <!-- LEGEND -->
@@ -1942,6 +2039,24 @@ function updateStatsForView(D){
   const sortedDates=days2.sort();
   document.getElementById('meta-period').textContent=`${sortedDates[0]?.slice(0,5)||'--'} – ${sortedDates[sortedDates.length-1]?.slice(0,5)||'--'}`;
   document.getElementById('badge-days').textContent=days2.length;
+  // ── Current Conditions: latest record from full DATA ──
+  const latest=DATA[DATA.length-1];
+  if(latest){
+    const ch=latest.humidity,ct=latest.temp,cd=latest.dewPoint;
+    const cel=document.getElementById('s-curr-hum');
+    const ctel=document.getElementById('s-curr-temp');
+    const cdel=document.getElementById('s-curr-dew');
+    const csel=document.getElementById('s-curr-hum-status');
+    if(cel) cel.textContent=ch+'%';
+    if(ctel) ctel.textContent=ct+'°F';
+    if(cdel) cdel.textContent=cd+'°F';
+    if(csel){
+      const st=hStat(ch);
+      csel.textContent=st.label;
+      csel.className='curr-status-badge curr-status-'+st.label.toLowerCase();
+      if(cel) cel.style.color=hColIoT(ch);
+    }
+  }
 }
 
 // ═══════════════════ DAILY GRID ═══════════════════
