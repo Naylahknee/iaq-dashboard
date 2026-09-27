@@ -3099,7 +3099,16 @@ function loadCSV(){
   const rawBody=document.getElementById('raw-table-body');
   if(rawBody){rawBody.innerHTML='';rawBody.dataset.built='false';}
   // Persist uploaded data so it survives page refreshes
-  try{localStorage.setItem('iaq-saved-data',JSON.stringify(finalData));localStorage.setItem('iaq-saved-label',label);}catch(e){}
+  // Clear first to free space before writing, then try progressively smaller slices
+  try{localStorage.removeItem('iaq-saved-data');localStorage.removeItem('iaq-saved-label');}catch(e){}
+  const _saves=[finalData, finalData.slice(-3000), finalData.slice(-1500), finalData.slice(-500)];
+  for(const slice of _saves){
+    try{
+      localStorage.setItem('iaq-saved-data',JSON.stringify(slice));
+      localStorage.setItem('iaq-saved-label', slice.length<finalData.length ? label+' (recent '+slice.length+')' : label);
+      break;
+    }catch(e){ localStorage.removeItem('iaq-saved-data'); }
+  }
   initDashboard(finalData, label);
 }
 
