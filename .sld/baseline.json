@@ -1,0 +1,442 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-10T00:55:46.109Z",
+  "manifestVersion": 1,
+  "application": {
+    "name": "iaq-dashboard",
+    "root": "."
+  },
+  "files": {
+    ".assetsignore": {
+      "hash": "e1f9f91ebaac2050",
+      "size": 58,
+      "lineCount": 6,
+      "tags": []
+    },
+    ".sld/settings.mjs": {
+      "hash": "8fe3cd1d87a941b1",
+      "size": 2616,
+      "lineCount": 73,
+      "tags": []
+    },
+    ".sld/vendor/.core-hashes.json": {
+      "hash": "663e323c690da393",
+      "size": 3746,
+      "lineCount": 38,
+      "tags": []
+    },
+    ".sld/vendor/.core-version": {
+      "hash": "dc595ad3826fc9d9",
+      "size": 41,
+      "lineCount": 2,
+      "tags": []
+    },
+    ".sld/vendor/VENDOR.md": {
+      "hash": "77ac593be7a08a95",
+      "size": 775,
+      "lineCount": 18,
+      "tags": []
+    },
+    ".sld/vendor/cli/sld.js": {
+      "hash": "193736840f086aa8",
+      "size": 17111,
+      "lineCount": 421,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/engine.test.mjs": {
+      "hash": "92a4d300951d7e63",
+      "size": 15898,
+      "lineCount": 376,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/fixture.manifest.js": {
+      "hash": "420232e1b27b8b8e",
+      "size": 3912,
+      "lineCount": 111,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/governance-paths.test.mjs": {
+      "hash": "2456195934bacfe9",
+      "size": 5788,
+      "lineCount": 137,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/impact-audit.test.mjs": {
+      "hash": "9f937cb14223f107",
+      "size": 3150,
+      "lineCount": 69,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/inspector.test.mjs": {
+      "hash": "9d4c2a13d7218eaf",
+      "size": 7564,
+      "lineCount": 242,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/jubilee.test.mjs": {
+      "hash": "097d12afb0c4854a",
+      "size": 10642,
+      "lineCount": 268,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/manifest-specimen.test.mjs": {
+      "hash": "5e3d5da042314b08",
+      "size": 3485,
+      "lineCount": 90,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/scanner.test.mjs": {
+      "hash": "762263321e2066bf",
+      "size": 1191,
+      "lineCount": 27,
+      "tags": []
+    },
+    ".sld/vendor/src/core/__tests__/scope.test.mjs": {
+      "hash": "43bb571e0b6cb29f",
+      "size": 19778,
+      "lineCount": 493,
+      "tags": []
+    },
+    ".sld/vendor/src/core/audit/audit.js": {
+      "hash": "04bddba2d0780dbb",
+      "size": 1624,
+      "lineCount": 50,
+      "tags": []
+    },
+    ".sld/vendor/src/core/engine/decision-engine.js": {
+      "hash": "713db4d7ce4468b7",
+      "size": 7554,
+      "lineCount": 200,
+      "tags": []
+    },
+    ".sld/vendor/src/core/engine/match.js": {
+      "hash": "c96ae08aeddce0c4",
+      "size": 8147,
+      "lineCount": 234,
+      "tags": []
+    },
+    ".sld/vendor/src/core/graph/impact.js": {
+      "hash": "6329154310cfe368",
+      "size": 2676,
+      "lineCount": 86,
+      "tags": []
+    },
+    ".sld/vendor/src/core/index.d.ts": {
+      "hash": "b44b7614c0245c25",
+      "size": 12345,
+      "lineCount": 396,
+      "tags": []
+    },
+    ".sld/vendor/src/core/index.js": {
+      "hash": "e88facb71893bf5e",
+      "size": 2095,
+      "lineCount": 50,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/canonical.js": {
+      "hash": "e4e0c5d0b795f55f",
+      "size": 528,
+      "lineCount": 24,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-1-identity.js": {
+      "hash": "0a91553efd0bd49d",
+      "size": 1540,
+      "lineCount": 47,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-2-architecture.js": {
+      "hash": "d2bcf21e1cbf709e",
+      "size": 3064,
+      "lineCount": 75,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-3-dependencies.js": {
+      "hash": "72218c3a0847fddb",
+      "size": 2714,
+      "lineCount": 74,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-4-behavior.js": {
+      "hash": "4f12f946c09f93cd",
+      "size": 1615,
+      "lineCount": 47,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-5-data.js": {
+      "hash": "73ef3123c7c0f8de",
+      "size": 2098,
+      "lineCount": 56,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-6-interface.js": {
+      "hash": "91eb6ae4e7fbff9b",
+      "size": 1986,
+      "lineCount": 60,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-7-execution.js": {
+      "hash": "5357f5de53e839b6",
+      "size": 6744,
+      "lineCount": 156,
+      "tags": []
+    },
+    ".sld/vendor/src/core/layers/layer-7-intent.js": {
+      "hash": "17c559a7d62fca1b",
+      "size": 2953,
+      "lineCount": 78,
+      "tags": []
+    },
+    ".sld/vendor/src/core/manifest/README.md": {
+      "hash": "969479963d48a9ff",
+      "size": 2456,
+      "lineCount": 36,
+      "tags": []
+    },
+    ".sld/vendor/src/core/manifest/example.manifest.js": {
+      "hash": "d9c2f6bbbceb8406",
+      "size": 6567,
+      "lineCount": 156,
+      "tags": []
+    },
+    ".sld/vendor/src/core/node/scan.mjs": {
+      "hash": "6383fe2d65437954",
+      "size": 11450,
+      "lineCount": 349,
+      "tags": []
+    },
+    ".sld/vendor/src/core/report/inspector.mjs": {
+      "hash": "cdae2555469b4938",
+      "size": 19475,
+      "lineCount": 518,
+      "tags": []
+    },
+    ".sld/vendor/src/core/scope/scope-gate.js": {
+      "hash": "58533de5ae940534",
+      "size": 11904,
+      "lineCount": 294,
+      "tags": []
+    },
+    ".sld/vendor/src/core/scope/task-compiler.js": {
+      "hash": "ce354205c5203b8a",
+      "size": 3249,
+      "lineCount": 95,
+      "tags": []
+    },
+    ".sld/vendor/src/core/scope/task-contract.js": {
+      "hash": "cbe1bf92bb58e4d7",
+      "size": 8518,
+      "lineCount": 198,
+      "tags": []
+    },
+    ".sld/verify-vendor.mjs": {
+      "hash": "a4b136b28aaf476a",
+      "size": 2980,
+      "lineCount": 90,
+      "tags": []
+    },
+    "README.md": {
+      "hash": "cfca565fed8f3bfe",
+      "size": 967,
+      "lineCount": 15,
+      "tags": []
+    },
+    "floorplan-3d.webp": {
+      "hash": "59ab27bc03d536c0",
+      "size": 41678,
+      "lineCount": 137,
+      "tags": []
+    },
+    "floorplan.png": {
+      "hash": "93e27529d5eb98cd",
+      "size": 1169288,
+      "lineCount": 4199,
+      "tags": []
+    },
+    "index.html": {
+      "hash": "0efbb562f79faada",
+      "size": 2373276,
+      "lineCount": 386,
+      "tags": []
+    },
+    "layout-overrides.css": {
+      "hash": "172e2a84a2352ba4",
+      "size": 5316,
+      "lineCount": 78,
+      "tags": []
+    },
+    "redesign-direct.css": {
+      "hash": "8d104f4bf3f3af8e",
+      "size": 3524,
+      "lineCount": 68,
+      "tags": []
+    },
+    "sensor-evidence-loader.js": {
+      "hash": "a5b2a74bcc841ce0",
+      "size": 272,
+      "lineCount": 4,
+      "tags": []
+    },
+    "sensor-evidence-view.css": {
+      "hash": "7d33444a1ebf097c",
+      "size": 3277,
+      "lineCount": 6,
+      "tags": []
+    },
+    "sensor-evidence-view.js": {
+      "hash": "8d732c84a4c484ef",
+      "size": 4680,
+      "lineCount": 52,
+      "tags": []
+    },
+    "visualization-layout.js": {
+      "hash": "7b88b59b1d3ebaed",
+      "size": 2948,
+      "lineCount": 67,
+      "tags": []
+    },
+    "worker.js": {
+      "hash": "185f56d25d3b56b7",
+      "size": 775,
+      "lineCount": 21,
+      "tags": []
+    },
+    "wrangler.jsonc": {
+      "hash": "bcfa1c0955c6aecc",
+      "size": 236,
+      "lineCount": 11,
+      "tags": []
+    }
+  },
+  "appRoots": [],
+  "edges": {
+    ".sld/vendor/cli/sld.js": [
+      "../src/core/index.js",
+      "../src/core/node/scan.mjs",
+      "../src/core/engine/match.js",
+      "../src/core/report/inspector.mjs"
+    ],
+    ".sld/vendor/src/core/__tests__/engine.test.mjs": [
+      "../index.js",
+      "./fixture.manifest.js",
+      "@/lib/db",
+      "@/lib/command-center"
+    ],
+    ".sld/vendor/src/core/__tests__/fixture.manifest.js": [
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/__tests__/governance-paths.test.mjs": [
+      "../index.js",
+      "../scope/task-contract.js",
+      "../engine/match.js",
+      "./fixture.manifest.js"
+    ],
+    ".sld/vendor/src/core/__tests__/impact-audit.test.mjs": [
+      "../index.js",
+      "./fixture.manifest.js"
+    ],
+    ".sld/vendor/src/core/__tests__/inspector.test.mjs": [
+      "../report/inspector.mjs"
+    ],
+    ".sld/vendor/src/core/__tests__/jubilee.test.mjs": [
+      "../index.js",
+      "../manifest/example.manifest.js",
+      "@/lib/db"
+    ],
+    ".sld/vendor/src/core/__tests__/manifest-specimen.test.mjs": [
+      "../engine/match.js",
+      "../layers/layer-5-data.js"
+    ],
+    ".sld/vendor/src/core/__tests__/scanner.test.mjs": [
+      "../node/scan.mjs"
+    ],
+    ".sld/vendor/src/core/__tests__/scope.test.mjs": [
+      "../index.js",
+      "./fixture.manifest.js"
+    ],
+    ".sld/vendor/src/core/audit/audit.js": [
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/engine/decision-engine.js": [
+      "../layers/layer-1-identity.js",
+      "../layers/layer-2-architecture.js",
+      "../layers/layer-3-dependencies.js",
+      "../layers/layer-4-behavior.js",
+      "../layers/layer-5-data.js",
+      "../layers/layer-6-interface.js",
+      "../layers/layer-7-intent.js",
+      "../layers/layer-7-execution.js",
+      "../scope/scope-gate.js",
+      "../layers/canonical.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/graph/impact.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/index.js": [
+      "./engine/decision-engine.js",
+      "./graph/impact.js",
+      "./audit/audit.js",
+      "./scope/scope-gate.js",
+      "./scope/task-contract.js",
+      "./scope/task-compiler.js",
+      "./layers/canonical.js",
+      "./report/inspector.mjs"
+    ],
+    ".sld/vendor/src/core/layers/layer-1-identity.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-2-architecture.js": [
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-3-dependencies.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-4-behavior.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-5-data.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-6-interface.js": [
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-7-execution.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/layers/layer-7-intent.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/manifest/example.manifest.js": [
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/node/scan.mjs": [
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/scope/scope-gate.js": [
+      "./task-compiler.js",
+      "./task-contract.js",
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/scope/task-compiler.js": [
+      "../engine/match.js",
+      "../index.js"
+    ],
+    ".sld/vendor/src/core/scope/task-contract.js": [
+      "../engine/match.js",
+      "../index.js"
+    ]
+  },
+  "envNames": [
+    "SLD_MANIFEST",
+    "X"
+  ]
+}
